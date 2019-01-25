@@ -4,7 +4,7 @@ title:      BaseActivity
 subtitle:   BaseActivity的封装
 date:       2018-7-12
 author:     小卷子
-header-img: 这篇文章标题背景图片
+header-img: img/home-bg-o.jpg
 catalog: true
 tags:
     - BaseActivity
