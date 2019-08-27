@@ -1,0 +1,302 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>从图片上传讲到HTTP | Jiang</title>
+<link rel="shortcut icon" href="https://cherrylover.github.io/favicon.ico?v=1565058747395">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cherrylover.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-143284233-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-143284233-1');
+</script>
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cherrylover.github.io">
+  <img class="avatar" src="https://cherrylover.github.io/images/avatar.png?v=1565058747395" alt="">
+  </a>
+  <h1 class="site-title">
+    Jiang
+  </h1>
+  <p class="site-description">
+    我允许你走进我的世界，但不许你在我的世界里走来走去。
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/CherryLover" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+        <a href="https://juejin.im/user/576d73cd0a2b58006a09ad87" target="_blank">
+          <i class="fab fa-weibo"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+      
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              从图片上传讲到HTTP
+            </h2>
+            <div class="post-info">
+              <time class="post-time">
+                · 2018-09-02 ·
+              </time>
+              
+                <a href="https://cherrylover.github.io/tag/ari5goDnZ" class="post-tags">
+                  # 基础技能
+                </a>
+              
+            </div>
+            
+              <div class="post-feature-image" style="background-image: url('https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/HTTP_learn.jpg')">
+              </div>
+            
+            <div class="post-content">
+              <p>HTTP 每次学的时候都感觉有些痛苦，不是痛苦记不住，是感觉零零星星的，看着看着就不知道自己看的是啥了。其实都是只看到管中窥豹，没有一个全局的思想，下面就通过一个简单的显示网络上的图片展开讲一下 HTTP。给你打开一个 HTTP 的大门。</p>
+ <!-- more -->
+<p>有关于 HTTP 的详细使用文档。可以在这里 <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP">点击查看</a>，如果没有 HTTP 基础的朋友或是有些迷糊的同学，建议先通过这个小例子，大概了解一下 HTTP，然后再去仔细的看每一个点。</p>
+<h2 id="通过网络获取一张图片">通过网络获取一张图片</h2>
+<p><img src="https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/tuyi.jpg" alt="图片缩略图"></p>
+<p>这是一张我的壁纸的缩略图，它的网址为：http://wx1.sinaimg.cn/mw690/986bd8b7gy1fuvkez49nkj211s0lchdt.jpg。</p>
+<h3 id="从-url-出发">从 URL 出发</h3>
+<p>我们都知道，在浏览器地址栏中输入这个网址然后回车会得到一张图片，那么它是怎么显示出来的呢？</p>
+<p>首先，我们把 URL 进行拆分一下，具体得到三个部分：</p>
+<ol>
+<li>http:</li>
+<li>wx1.sinaimg.cn</li>
+<li>/mw690/986bd8b7gy1fuvkez49nkj211s0lchdt.jpg</li>
+</ol>
+<p>这三个部分，分别对应的是我的壁纸的 URL 中的协议类型、服务器地址、具体路径。具体什么意思呢？</p>
+<p>简单来说就是浏览器会向 wx1.sinaimg.cn 发送一个 Http 请求类型的请求，用于获取 /mw690/986bd8b7gy1fuvkez49nkj211s0lchdt.jpg 这个路径的文件。</p>
+<p>说了简单的，再来看看复杂版的。</p>
+<pre><code>GET /mw690/986bd8b7gy1fuvkez49nkj211s0lchdt.jpg HTTP/1.1
+Host: wx1.sinaimg.cn
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36
+</code></pre>
+<p>这个就是稍微复杂版的样子，实际的内容不止这些，我删去了部分内容。全部内容就是一个网络请求 <strong>Request</strong> 。这个 Request 就是浏览器通过在我们地址栏输入的内容以及它（浏览器）协助我们增加的部分内容之后构建出来的。如果是客户端开发者，在与后台开发人员确定了 URL 及具体的请求参数等信息后，是需要自己通过各种框架或是自己写来构建一个请求的。解释一下，第一行 <code>GET /mw690/986bd8b7gy1fuvkez49nkj211s0lchdt.jpg HTTP/1.1</code> 为请求行，其中包括请求方法，请求资源的路径，Http 版本，其他部分为请求头也叫 Request HEAD。</p>
+<h4 id="请求行">请求行</h4>
+<p>请求行内容较少，就三种类型，分别对应请求方法，请求资源的路径，Http 版本，先看请求资源。</p>
+<p>请求资源就是你所请求的目标服务器上的文件路径，就这么简单，再来看看 Http 版本，上面的请求行中表明了使用的是 Http 1.1 版本，也是目前使用较多的版本，Http 2.0 已经出来了，但还未大规模应用。</p>
+<p>重点来了，请求方法，请求方法一共有 8 个，常用的只有那么几个，如果想了解更多<a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods">点击这里</a>。</p>
+<ol>
+<li>GET：用于请求指定的页面信息，不发送 body；</li>
+<li>POST：用于新增或修改服务器资源，内容写在 body 中。</li>
+<li>PUT：用于修改服务器资源，内容放在 body 中。具有幂等性，即：一次和多次请求某一个资源服务器处理后的结果应为同样的。</li>
+<li>DELETE：用于删除服务器资源，不发送 body。</li>
+<li>HEAD：和 GET 请求使用方法相同，但服务器返回的响应报文中不包含 body。</li>
+</ol>
+<p>讲到这里，我们算是把请求发送到服务器了，紧接着服务器接收到请求该处理了。</p>
+<pre><code>HTTP/1.1 200 OK
+Date: Sun, 02 Sep 2018 15:29:53 GMT
+Content-Type: image/jpeg
+Content-Length: 110989
+Cache-Control: max-age=7776000
+</code></pre>
+<h4 id="状态行">状态行</h4>
+<p>上面就是服务器收到我们的请求后，给出的响应结果（Response）。以上就是服务器响应结果的一部分内容。与请求类似，响应也有一个叫做状态行的东西，就是第一行<code>HTTP/1.1 200 Ok</code>，其中，<code>HTTP/1.1</code>表示的 HTTP 的版本，200 表示的响应的状态码，Ok 为状态码对应的状态信息。不过 200 只是针对之前请求图片的结果为 成功，还有其他的状态码。下面列出几个，想了解更多<a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status">点击这里</a>。</p>
+<ul>
+<li>1××，临时性消息。
+<ul>
+<li>100：目前为止一起正常，客户端可以继续请求；</li>
+<li>101：同意客户端发来的切换到 HTTP2.0 的请求；</li>
+</ul>
+</li>
+<li>2××，成功。
+<ul>
+<li>200： ok</li>
+<li>201：  成功创建</li>
+<li>202： 该请求已被接受处理，但处理尚未完成。</li>
+</ul>
+</li>
+<li>3××，重定向
+<ul>
+<li>301： 永久性移动；</li>
+<li>302:  暂时性移动；</li>
+<li>304： 内容未修改；</li>
+</ul>
+</li>
+<li>4××，客户端错误。
+<ul>
+<li>400： 错误的请求，服务器不会处理。</li>
+<li>401： 没认证或认证失败</li>
+<li>403： 服务器拒绝处理；</li>
+<li>404： 服务器找不到对应的资源信息；</li>
+</ul>
+</li>
+<li>5××，服务器错误。
+<ul>
+<li>500： 服务器内部错误；</li>
+<li>501： 服务器要么不识别请求方法，要么无法满足请求。</li>
+</ul>
+</li>
+</ul>
+<p>这里的响应结果，是有 Body 的，Body 就是文章开头的那张图片，就不展示了，没有 Body 的响应也是有的，上面也讲了，就是当请求方法为 <code>HEAD</code> 的时候是不会有响应 Body 的，只有响应 <code>HEAD</code>。</p>
+<h2 id="小结">小结</h2>
+<ul>
+<li>客户端做了哪些事
+<ol>
+<li>浏览器将输入的图片 URL 解析为请求行；</li>
+<li>客户端自定义构建请求头（HEAD）；</li>
+<li>组装数据向目标服务器发送请求；</li>
+</ol>
+</li>
+<li>服务器端做了哪些事
+<ol>
+<li>根据服务器处理结果构建响应（Response）响应头；</li>
+<li>根据响应具体消息构建响应头（HEAD）;</li>
+<li>组装数据给客户端响应信息；</li>
+</ol>
+</li>
+</ul>
+<h2 id="head">HEAD</h2>
+<p>仔细看，请求与响应他们都离不开一个他们都共有的东西，就是头部信息（HEAD）请求有请求头部，响应有响应头部，虽然内部不一定相同，但他们都是对 Body 或者说具体的请求内容的一种描述信息。怎么描述？比如，我的那张壁纸，在响应信息里 <code>Content-Type: image/jpeg</code> 这个就表示，Body 内容为图片，<code>Content-Length: 110989</code>这个就表示为内容长度为 110989 字节，即为 109 k。HEAD 的信息存储格式为 <code>&lt;key&gt;: &lt;Value&gt;</code> 的形式。下面就介绍一些常用的 HEAD。</p>
+<h3 id="content-type">Content-Type</h3>
+<pre><code>Content-Type: text/html; 
+</code></pre>
+<ul>
+<li>image/jpeg 表示为 Body 为图片类型；</li>
+<li>text/html 表示 Body 为 Html 文本类型；</li>
+<li>x-www-form-urlencoded 表示 Body 纯文本表单提交类型</li>
+<li>multitype/form-data 表示非纯文本（内容包含文件或其他非字符串形式的内容）表单提交类型。</li>
+<li>application/json 表示 json 格式的二进制类型
+<ul>
+<li>application 表示任意类型的二进制数据，json 则指定了具体的数据类型，类似的还有 application/pdf 表示 pdf 格式的二进制类型；</li>
+</ul>
+</li>
+</ul>
+<h3 id="location">Location</h3>
+<pre><code>Location: https://www.google.com/
+</code></pre>
+<p>在遇到 3×× 的请求状态码（重定向）时会遇到这个，它表示的内容为目标 URL。</p>
+<h3 id="host">Host</h3>
+<pre><code>Host: wx1.sinaimg.cn
+</code></pre>
+<p>表示，目标服务器主机，常见的为 <code>Host: wx1.sinaimg.cn</code> 并且后面是可以加端口号的。</p>
+<h3 id="transfer-encoding">Transfer-Encoding</h3>
+<pre><code>Transfer-Encoding: chunked
+</code></pre>
+<p>用于表示在网络传输中具体用了什么样的形式进行分块传输。与 Content-Length 不同时存在。如果它有几种类型，常用的有 chunked gzip。其中 chunked 用于分段传输内容，gzip 用于将数据压缩后进行传输。</p>
+<h3 id="range">Range</h3>
+<pre><code>Range: bytes=0-5000
+</code></pre>
+<p>用于获取指定部分内容，如果使用上面的 HEAD 作为图片请求的一部分 HEAD 的话，我可以单独获取 0 到 5000 位置的字节信息，下面这张图就是加上这个 HEAD 之后的响应结果。Range 可以用在断电续传、多线程下载。</p>
+<p><img src="https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/rang.jpg" alt="Rang示例"></p>
+<h3 id="accept-charset">Accept-Charset</h3>
+<pre><code>Accept-Charset: utf-8
+</code></pre>
+<p>表示客户端能接受的数据字符编码格式。</p>
+<h2 id="总结">总结</h2>
+<p>通过这一个简单的获取网络上图片的例子，相信你也了解了一部分关于 HTTP的内容，趁着这个劲头再去详细看一下开头提到那个 HTTP 的详细使用文档吧。</p>
+<p>下面这个图，只是我自己画的一个简版的关于 HTTP 的思维导图，你也可以试试。</p>
+<p><img src="https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/siweidaktu.jpg" alt="HTTP总结"></p>
+<p>本文题图：Photo by <a href="https://unsplash.com/@casparrubin?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Caspar Camille Rubin</a> on <a href="https://unsplash.com/search/photos/http?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a></p>
+
+            </div>
+          </article>
+        </div>
+    
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cherrylover.github.io/post/retrofit-shi-yong-pei-zhi">
+              <h3 class="post-title">
+                Retrofit 使用配置
+              </h3>
+            </a>
+          </div>  
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'f5cc70d7d50fba65cf69',
+    clientSecret: '1d018e38ce9cdd399682bdd76690decfef00a051',
+    repo: 'CherryLover.github.io',
+    owner: 'CherryLover',
+    admin: ['CherryLover'],
+    id: location.pathname,      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+    
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

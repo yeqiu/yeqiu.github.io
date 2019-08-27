@@ -1,0 +1,342 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Navigation 之 Fragment 切换 | Jiang</title>
+<link rel="shortcut icon" href="https://cherrylover.github.io/favicon.ico?v=1565058747395">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cherrylover.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-143284233-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-143284233-1');
+</script>
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cherrylover.github.io">
+  <img class="avatar" src="https://cherrylover.github.io/images/avatar.png?v=1565058747395" alt="">
+  </a>
+  <h1 class="site-title">
+    Jiang
+  </h1>
+  <p class="site-description">
+    我允许你走进我的世界，但不许你在我的世界里走来走去。
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/CherryLover" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+        <a href="https://juejin.im/user/576d73cd0a2b58006a09ad87" target="_blank">
+          <i class="fab fa-weibo"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+      
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Navigation 之 Fragment 切换
+            </h2>
+            <div class="post-info">
+              <time class="post-time">
+                · 2019-07-24 ·
+              </time>
+              
+                <a href="https://cherrylover.github.io/tag/J97-m2V0f" class="post-tags">
+                  # Jetpack 追新
+                </a>
+              
+                <a href="https://cherrylover.github.io/tag/37yorOBW4" class="post-tags">
+                  # 持续学习
+                </a>
+              
+                <a href="https://cherrylover.github.io/tag/Mk4HmBIQ7" class="post-tags">
+                  # Android
+                </a>
+              
+            </div>
+            
+              <div class="post-feature-image" style="background-image: url('https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/blog/blog_nav_state.jpg')">
+              </div>
+            
+            <div class="post-content">
+              <p>本篇是有关 Navigation 的第二篇，如有对 Navigation 不了解的朋友请先阅读<a href="https://jiangjiwei.site/post/lai-xue-yi-bo-navigation/">来学一波 Navigation</a>。</p>
+<p>在上一篇中，我们利用 Navigation 与 BottomNavigationView 做出了一个有三个 Tab 的页面，分别是 Feed、Timer、Mine，这三个 Fragment 都是只在当前页面显示各自的名称。</p>
+<p>现在我们来给 TimerFragment 加点内容，我们在 TimerFragment 的 onCreateView 方法中启动一个倒计时。</p>
+<pre><code class="language-java">private void startTimer() {
+    new CountDownTimer(10 * 1000, 1000) {
+
+        @Override
+        public void onTick(long millisUntilFinished) {
+            tvLabel.setText(String.valueOf((millisUntilFinished / 1000) + 1));
+        }
+
+        @Override
+        public void onFinish() {
+            tvLabel.setText(&quot;Finished&quot;);
+        }
+    }.start();
+}
+</code></pre>
+<p><img src="https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/blog/blog_nav_tab.gif" alt=""></p>
+<p>仔细看上面的效果可以看到，每次切换到 TimerFragment 时，倒计时总会重新开始，不是我们想要的仅开始一次。这是什么问题导致的呢？答案是 TimerFragment 执行了多次的 onCreateView，为什么是会执行多次，Fragment 为什么会加载多次？我们没有什么特殊的操作呀。是不是因为 Navigation？</p>
+<p>现在让我们深入到 Navigation 的源码看一看这到底是怎么一回事，以及我们改如何解决这一问题。</p>
+<p>首先，我们需要明确我们的方向，就是 Navigation 到底是怎么做 Fragment 切换的，为什么会导致 Fragment 的 onCreateView 被多次执行。</p>
+<p>从哪里作为入口呢？了解过 Navigation 的朋友对下面这行代码应该不会陌生，就是通过一个 View 获取到 NavController，然后通过执行 NavController 的 navigate 这个方法，我们就从这个方法开始。</p>
+<pre><code class="language-java">Navigation.findNavController(view)
+        .navigate(id);
+</code></pre>
+<p>这个 navigate 有多个重载方法，我们开始的 navigate 方法最终也是执行到下面这个重载方法。</p>
+<pre><code class="language-java">navigate(NavDestination node, Bundle args, NavOptions navOptions, Navigator.Extras navigatorExtras)
+</code></pre>
+<p>方法的具体内容如下图：</p>
+<p><img src="https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/blog/blog_code_navigate.png" alt=""></p>
+<p>其中在第 9 行，我们可以看到通过 mNavigatorProvider 获取到了一个泛型类型为 NavDestination 的 Navigator 对象，并且在第 12 行时，通过调用刚获取到的 navigator 的 navigate 方法，得到了 NavDestination 这个对象。</p>
+<p>这两行是关键代码，一个是获取到执行 navigate 的对象，一个是实际执行 navigate 的方法。看到这，我们就只需要找到 Navigator 的 navigate 方法即可。不过，Navigator 这个只是一个抽象类，我们还需要继续寻找它的实现类。</p>
+<blockquote>
+<p>快捷键：Implementation(s) Mac: option(⌥) + command(⌘)+B</p>
+</blockquote>
+<p><img src="https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/blog/image-20190724110340568.png" alt="image-20190724110340568"></p>
+<p>Navigator 抽象类的关键代码：</p>
+<pre><code class="language-java">public abstract class Navigator&lt;D extends NavDestination&gt; {
+    @Retention(RUNTIME)
+    @Target({TYPE})
+    @SuppressWarnings(&quot;UnknownNullness&quot;)
+    public @interface Name {
+        String value();
+    }
+
+    @NonNull
+    public abstract D createDestination();
+
+    @Nullable
+    public abstract NavDestination navigate(@NonNull D destination, @Nullable Bundle args,
+            @Nullable NavOptions navOptions, @Nullable Extras navigatorExtras);
+
+    public abstract boolean popBackStack();
+
+    @Nullable
+    public Bundle onSaveState() {
+        return null;
+    }
+
+    public void onRestoreState(@NonNull Bundle savedState) {
+    }
+
+    public interface Extras {
+    }
+}
+</code></pre>
+<p>通过快捷键我们能找到多个实现类，有 ActivityNavigator、DialogFragmentNavigator 还有 FragmentNavigator 等，这里我们只关注 FragmentNavigator 这个类中的 navigate 这个方法。</p>
+<p><img src="https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/blog/blog_code_navigate_real.png" alt=""></p>
+<p>别看这么多代码，别害怕，其实关键部分的代码就是第 32 行 <code>ft.replace(mContainerId, frag)</code> 这里使用的是 FragmentTransaction 的 replace 方法，这个方法不用说了吧。 replace 是移除了相同 id 的 fragment 然后再进行 add 的。</p>
+<p>所以，看到这，我们也就知道了，为什么 TimerFragment 的 onCreateView 方法会被执行多次了，原因就是在这。</p>
+<p>找到原因了，那我们有什么方法去规避，或者说去绕过这个 replace 吗？答案是有的。</p>
+<p>还记得刚才我们找的下面这行代码吧（忘记的，请看第一张代码图的第 9 行），刚才我说，通过 mNavigatorProvider 找到一个泛型类型为 NavDestination 的 Navigator 对象，那它实际上是怎么找到的呢？是通过 node.getNavigatorName() 然后找的，这个 node 是什么东西？以及 mNavigatorProvider.getNavigator 内部究竟发生了什么？</p>
+<pre><code class="language-java">Navigator&lt;NavDestination&gt; navigator = mNavigatorProvider.getNavigator(
+        node.getNavigatorName());
+</code></pre>
+<p>实际上这里的 node 就是一个 NavDestination 对象，而一个 NavDestination 对象就是对应着 navigation graph 中的节点信息。我用来演示的 Demo 的 navigation graph 文件如下：</p>
+<pre><code class="language-xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;navigation xmlns:android=&quot;http://schemas.android.com/apk/res/android&quot;
+    xmlns:app=&quot;http://schemas.android.com/apk/res-auto&quot;
+    xmlns:tools=&quot;http://schemas.android.com/tools&quot;
+    android:id=&quot;@+id/tab_navigation&quot;
+    app:startDestination=&quot;@id/feedFragment&quot;&gt;
+
+    &lt;fragment
+        android:id=&quot;@+id/feedFragment&quot;
+        android:name=&quot;me.monster.blogtest.tab.FeedFragment&quot;
+        android:label=&quot;fragment_feed&quot;
+        tools:layout=&quot;@layout/fragment_feed&quot; /&gt;
+    &lt;fragment
+        android:id=&quot;@+id/timerFragment&quot;
+        android:name=&quot;me.monster.blogtest.tab.TimerFragment&quot;
+        android:label=&quot;fragment_timer&quot;
+        tools:layout=&quot;@layout/fragment_timer&quot; /&gt;
+    &lt;fragment
+        android:id=&quot;@+id/mineFragment&quot;
+        android:name=&quot;me.monster.blogtest.tab.MineFragment&quot;
+        android:label=&quot;fragment_mine&quot;
+        tools:layout=&quot;@layout/fragment_mine&quot; /&gt;
+&lt;/navigation&gt;
+</code></pre>
+<p>node.getNavigatorName 返回的就是 fragment 节点的节点名称 <code>fragment</code>，而 getNavigator 其实内部就是维护了一个类型为 HashMap 的 mNavigators，这个 HashMap 存的 key 就是节点名称，value 就是抽象类 Navigator 的实现类。而 fragment 对应的 FragmentNavigator 也存储在其中。</p>
+<p>既然是存在一个 map，并从中取出相对于的 Navigator 实现类，那我们能不能创建一个类并实现 Navigator，然后将 key、value 添加到那个 HashMap 中。答案是可行的。在NavigatorProvider 这个类中有两个公共方法：</p>
+<ul>
+<li>addNavigator(Navigator navigator)</li>
+<li>addNavigator(String name, Navigator navigator)</li>
+</ul>
+<p>其中，一个参数的 addNavigator 也是调用了 两个参数的 addNavigator 方法，那个 name 也就是 navigation graph 中 fragment 节点的节点名称，同时也是 Navigator 这个抽象类中注解 <code>Name</code> 定义的值。而且在 NavController 这个类（最初我们找到的 navigate 所在的类）中有一个 getNavigatorProvider() 方法。</p>
+<p><img src="https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/blog/uml_blog_navigation.jpg" alt=""></p>
+<p>看到这，关系应该就比较清楚了。所以，我们需要自己创建一个类，实现 Navigator 并未 Name 注解添加一个值，然后在使用 Navigation 这个模块的 Activity 获取到 NavController 并调用其 getNavigatorProvider 方法后再调用 addNavigator 即可。</p>
+<p>Github 上已经有一个演示自定义实现 Navigator 的项目了。这个项目是以 Kotlin 语言编写的。</p>
+<p>项目地址： https://github.com/STAR-ZERO/navigation-keep-fragment-sample。</p>
+<blockquote>
+<p>说起来这个项目还是 <a href="https://github.com/drakeet">Drakeet</a> 在他的知识星球中分享的。感谢 Drakeet 的分享。</p>
+</blockquote>
+<p>我根据按照他的代码写了一份 Java 版本的，并且在其中改了两行代码（注释部分）。注释的内容其实就是使用 FragmentTranslation 对 Fragment 进行控制。原作者写的是 detach 与 attach 方法，我改成了使用 hide 和 show 方法。</p>
+<pre><code class="language-java">@Navigator.Name(&quot;keep_state_fragment&quot;)
+public class KeepStateNavigator extends FragmentNavigator {
+    private Context context;
+    private FragmentManager manager;
+    private int containerId;
+
+    public KeepStateNavigator(@NonNull Context context, @NonNull FragmentManager manager, int containerId) {
+        super(context, manager, containerId);
+        this.context = context;
+        this.manager = manager;
+        this.containerId = containerId;
+    }
+
+    @Nullable
+    @Override
+    public NavDestination navigate(@NonNull Destination destination, @Nullable Bundle args, @Nullable NavOptions navOptions, @Nullable Navigator.Extras navigatorExtras) {
+        String tag = String.valueOf(destination.getId());
+        FragmentTransaction transaction = manager.beginTransaction();
+        boolean initialNavigate = false;
+        Fragment currentFragment = manager.getPrimaryNavigationFragment();
+        if (currentFragment != null) {
+//            transaction.detach(currentFragment);
+            transaction.hide(currentFragment);
+        } else {
+            initialNavigate = true;
+        }
+        Fragment fragment = manager.findFragmentByTag(tag);
+        if (fragment == null) {
+            String className = destination.getClassName();
+            fragment = manager.getFragmentFactory().instantiate(context.getClassLoader(), className);
+            transaction.add(containerId, fragment, tag);
+        } else {
+//            transaction.attach(fragment);
+            transaction.show(fragment);
+        }
+
+        transaction.setPrimaryNavigationFragment(fragment);
+        transaction.setReorderingAllowed(true);
+        transaction.commitNow();
+        return initialNavigate ? destination : null;
+    }
+}
+</code></pre>
+<p>注意，使用自定义 Navigator 的时候 navigation graph 需要把 fragment 节点名称改为 keep_state_fragment，并且在承载的 Activity 中进行设置并且还需要把 Activity 布局文件中 fragment 的 navGraph 属性移除。</p>
+<pre><code class="language-java">NavController navController = Navigation.findNavController(this, R.id.fragment3);
+NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.fragment3);
+KeepStateNavigator navigator = new KeepStateNavigator(this, navHostFragment.getChildFragmentManager(), R.id.fragment3);
+navController.getNavigatorProvider().addNavigator(navigator);
+navController.setGraph(R.navigation.tab_navigation);
+</code></pre>
+<p>最后来看一下使用自定义 Navigator 时的 TabActivity。</p>
+<p><img src="https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/blog/blog_nav_tab_state.gif" alt=""></p>
+<p>本文首发于<a href="https://jiangjiwei.site/">个人博客</a>，文中全部源代码已上传至 <a href="https://github.com/CherryLover/BlogTest">GitHub</a>，代码分支为 master。喜欢本文的麻烦点个🌟。</p>
+<p>本文封面图：Photo by <a href="https://unsplash.com/@joaosilas?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">João Silas</a> on <a href="https://unsplash.com/search/photos/translation?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a></p>
+
+            </div>
+          </article>
+        </div>
+    
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cherrylover.github.io/post/kan-yi-kan-databinding">
+              <h3 class="post-title">
+                看一看 DataBinding
+              </h3>
+            </a>
+          </div>  
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'f5cc70d7d50fba65cf69',
+    clientSecret: '1d018e38ce9cdd399682bdd76690decfef00a051',
+    repo: 'CherryLover.github.io',
+    owner: 'CherryLover',
+    admin: ['CherryLover'],
+    id: location.pathname,      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+    
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

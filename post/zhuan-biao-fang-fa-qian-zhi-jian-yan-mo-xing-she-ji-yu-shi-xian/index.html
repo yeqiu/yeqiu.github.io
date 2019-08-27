@@ -1,0 +1,291 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>[转] 目标方法前置检验模型设计与实现 | Jiang</title>
+<link rel="shortcut icon" href="https://cherrylover.github.io/favicon.ico?v=1565058747395">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cherrylover.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-143284233-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-143284233-1');
+</script>
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cherrylover.github.io">
+  <img class="avatar" src="https://cherrylover.github.io/images/avatar.png?v=1565058747395" alt="">
+  </a>
+  <h1 class="site-title">
+    Jiang
+  </h1>
+  <p class="site-description">
+    我允许你走进我的世界，但不许你在我的世界里走来走去。
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/CherryLover" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+        <a href="https://juejin.im/user/576d73cd0a2b58006a09ad87" target="_blank">
+          <i class="fab fa-weibo"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+      
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              [转] 目标方法前置检验模型设计与实现
+            </h2>
+            <div class="post-info">
+              <time class="post-time">
+                · 2019-08-06 ·
+              </time>
+              
+                <a href="https://cherrylover.github.io/tag/xUsNqzqOV" class="post-tags">
+                  # 架构
+                </a>
+              
+                <a href="https://cherrylover.github.io/tag/R_L3US7TO" class="post-tags">
+                  # 转载
+                </a>
+              
+            </div>
+            
+              <div class="post-feature-image" style="background-image: url('https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/blog/delay-action/delay_action.jpg')">
+              </div>
+            
+            <div class="post-content">
+              <blockquote>
+<p>本文转载自 <a href="https://feelschaotic.github.io/">feelschaotic 的个人博客</a></p>
+</blockquote>
+<h2 id="前言">前言</h2>
+<p><a href="https://www.jianshu.com/p/ed880f35f97f">继上次的指纹验证</a>后，产品又提出了个项目典型需求：用户在未登录状态下，点击关注，跳转登录，登录成功后自动执行关注。</p>
+<h2 id="分析">分析</h2>
+<p>这里有两个需求：</p>
+<ol>
+<li>自动跳转到登录界面</li>
+<li>登录成功后再自动执行关注行为</li>
+</ol>
+<p>思考下抽象出通用性，首先，我们的目的是执行关注行为，但是关注行为需要用户处于登录状态。也就是说执行某个操作时需要满足一些前提条件，而这些前提条件是需要用户参与才能满足。可能存在多个前提条件的需求，这里可以分离出目标行为和前提条件行为。</p>
+<h2 id="技术选型">技术选型</h2>
+<p>那就登录页面加个回调喽，登录成功就回调回去，不过，我们可不想在登录界面侵入太多逻辑代码，而且也违背了可维护性和通用性，难道以后扩展时，每个前置条件都要加回调？</p>
+<p>再思考，第一想法是利用事件通知机制（EventBus、BroadcastReceiver），把登录成功这个事件 post 出去，异步执行关注行为。但如果前提条件有多个呢，是不是得发送多个事件？是不是得监听多个事件？而且，如果下次需求改了，目标事件不是执行关注事件了，而是执行发帖或者跳转到某个页面，那之前关注行为已经注册了，还是会通知到关注事件，难道要通过 msg 标志位来区分不同的目标行为吗？有没有更优雅简洁的方式呢？</p>
+<p>再思考，如果用拦截器呢？</p>
+<p>这种行为模式和拦截器非常相似，都是在执行目标前，判断是否符合条件。</p>
+<p>但是拦截器似乎并不能直接完成我们的需求，因为我们需要插入一个验证行为后（例如进入登录界面），还要执行相应的操作，保证这个验证行为通过后，才能真正执行我们的目标行为。拦截器执行完后，马上会执行目标方法。中间并不会等待。所以我们根本没有办法去执行我们的登录操作，所以pass了。</p>
+<p>那设计模式里的责任链模式，能不能提供点什么思路呢？</p>
+<p>在责任链模式里，很多的处理对象由每一个对象对其下家的引用而联接起来形成一条链。请求在这个链上传递，直到链上的<strong>某一个</strong>对象决定处理此请求。<strong>注意，是某一个</strong>！而我们的场景是，需要通过<strong>所有的</strong>前置条件验证，才能执行目标方法。</p>
+<h2 id="设计与实现">设计与实现</h2>
+<p>思考可以改良一下责任链，每一个前置条件对象（<code>Valid</code>类）不再持有其下家的引用，而是采用一个队列存储所有的前置条件对象，以先进先出的顺序依次验证条件。</p>
+<pre><code class="language-java">private Queue&lt;Valid&gt; validQueue = new ArrayDeque&lt;&gt;();
+</code></pre>
+<p>前置条件对象抽象为接口<code>Valid</code></p>
+<pre><code class="language-java">public interface Valid {
+    /**
+     * 是否满足检验器的要求，如果不满足的话，则执行doValid()方法。如果满足，则执行目标action.call
+     * @return
+     */
+    boolean preCheck();
+
+    /**
+     * 去执行验证前置行为，例如跳转到登录界面。（但并未完成验证。所以需要在登陆成功时调用preCheck()再次检查）
+     */
+    void doValid();
+
+}
+</code></pre>
+<p>可以看到，我们把前置条件对象的验证条件和操作分离开来。</p>
+<p>目标对象<code>Action</code>就很简单了，仅拥有一个目标执行方法。</p>
+<pre><code class="language-java">public interface Action {
+    void call();
+}
+</code></pre>
+<p>整体的验证流程，如下图所示：</p>
+<p><img src="https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/blog/delay-action/delay_action_process.png" alt="验证流程"></p>
+<p>循环从前置条件对象队列 <code>validQueue</code> 里取出验证对象，调用 check 方法判断是否满足条件，不满足则进入该验证对象的验证流程，验证完毕，再次调用 check 方法判断满足条件，如果满足则取下一个，直至队列为空，就可以直接执行目标方法了。</p>
+<p>那么前置条件对象队列 <code>validQueue</code> 和目标对象的持有方，我们封装为 <code>Call</code>，意为一次执行。</p>
+<pre><code class="language-java">public class Call {
+    //目标对象 
+    private Action action;
+    //先进先出验证模型
+    private Queue&lt;Valid&gt; validQueue = new ArrayDeque&lt;&gt;();
+    //上一个执行的valid
+    private Valid lastValid;
+
+}
+</code></pre>
+<p>包装一个单例的持有Call对象的外观类 <code>SingleCall</code>，提供给业务层调用。</p>
+<pre><code class="language-java">public class SingleCall {
+
+    private Call call = new Call();
+
+    public SingleCall addAction(Action action) {
+        clear();
+        call.setAction(action);
+        return this;
+    }
+
+    public SingleCall addValid(Valid valid) {
+        //只添加无效的，验证不通过的
+        if (valid.preCheck()) {
+            return this;
+        }
+        call.addValid(valid);
+        return this;
+    }
+
+    public void doCall() {
+        //如果上一条valid没有通过，是不允许再发起call的
+        if (call.getLastValid() != null &amp;&amp; !call.getLastValid().preCheck()) {
+            return;
+        }
+
+        //如果全部都验证通过了，执行action
+        if (call.getValidQueue().size() == 0) {
+            if (call.getAction() != null) { //容错处理
+                call.getAction().call();
+                clear();
+            }
+        } else {
+            //执行验证
+            Valid valid = call.getValidQueue().poll();
+            call.setLastValid(valid);
+            valid.doValid();
+        }
+
+    }
+    .....
+}
+</code></pre>
+<p>调用示例（常用场景，单 Action）：</p>
+<p><code>Activity</code> 实现 <code>Action</code> 接口，或 new 一个<code>Action</code> 实现类，实现 call 目标行为。</p>
+<p>前置行为完成后，调用 <code>SingleCall.getInstance().doCall();</code> 重新启动验证模型。因为验证操作需要用户手动触发完成，我们只是引导用户到了验证体里，由于我们因为等待用户的操作，验证模型就在这里停下来了，如果验证操作成功了，我们需要让整个验证模型再运转起来了，所以验证后，永远少不了手动开启验证模型。</p>
+<p>以下是整个模型的类 UML 图，重点梳理 Valid、Call、Action 三者的关系：</p>
+<p><img src="https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/blog/delay-action/delay_action_uml.png" alt="类 UML 图"></p>
+<h2 id="应用场景">应用场景</h2>
+<p><img src="https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/blog/delay-action/delay_action_since.png" alt=""></p>
+<h2 id="源码地址">源码地址</h2>
+<p><a href="https://github.com/feelschaotic/DelayAction">github 源码地址</a></p>
+<ul>
+<li>增加了容错处理</li>
+<li>补充了嵌套 Call 的情况</li>
+</ul>
+<blockquote>
+<p>参考：</p>
+<ul>
+<li><a href="https://www.jianshu.com/p/22a9d4eb07ce">在执行目标操作前，插入N个需要用户参与的操作，简化此过程</a></li>
+<li><a href="https://www.jianshu.com/p/1d0180ec64fb">android 登录成功后再跳转到目标界面的思考</a></li>
+</ul>
+</blockquote>
+<p>本文转载自 <a href="https://feelschaotic.github.io/">feelschaotic 的个人博客</a>，封面图是编者加的，封面图：Photo by <a href="https://unsplash.com/@chengfengrecord?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">cheng feng</a> on <a href="https://unsplash.com/?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a>。</p>
+
+            </div>
+          </article>
+        </div>
+    
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cherrylover.github.io/post/navigation-zhi-fragment-qie-huan">
+              <h3 class="post-title">
+                Navigation 之 Fragment 切换
+              </h3>
+            </a>
+          </div>  
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'f5cc70d7d50fba65cf69',
+    clientSecret: '1d018e38ce9cdd399682bdd76690decfef00a051',
+    repo: 'CherryLover.github.io',
+    owner: 'CherryLover',
+    admin: ['CherryLover'],
+    id: location.pathname,      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+    
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

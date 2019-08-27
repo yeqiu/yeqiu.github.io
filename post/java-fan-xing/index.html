@@ -1,0 +1,323 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Java 泛型 | Jiang</title>
+<link rel="shortcut icon" href="https://cherrylover.github.io/favicon.ico?v=1565058747395">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cherrylover.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-143284233-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-143284233-1');
+</script>
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cherrylover.github.io">
+  <img class="avatar" src="https://cherrylover.github.io/images/avatar.png?v=1565058747395" alt="">
+  </a>
+  <h1 class="site-title">
+    Jiang
+  </h1>
+  <p class="site-description">
+    我允许你走进我的世界，但不许你在我的世界里走来走去。
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/CherryLover" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+        <a href="https://juejin.im/user/576d73cd0a2b58006a09ad87" target="_blank">
+          <i class="fab fa-weibo"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+      
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Java 泛型
+            </h2>
+            <div class="post-info">
+              <time class="post-time">
+                · 2019-06-27 ·
+              </time>
+              
+                <a href="https://cherrylover.github.io/tag/ari5goDnZ" class="post-tags">
+                  # 基础技能
+                </a>
+              
+            </div>
+            
+            <div class="post-content">
+              <p>泛型，在日常工作中，使用最广泛的就是集合及 Map 中，一直以来也没认真想过泛型，现在准备来学一下泛型。</p>
+<!-- more --> 
+<p>来，先从最简单的开始，一个元素全部为 String 的集合开始。</p>
+<pre><code class="language-java">ArrayList&lt;String&gt; nameList = new ArrayList&lt;&gt;();
+nameList.add(&quot;张三&quot;);
+nameList.add(&quot;李四&quot;);
+nameList.add(&quot;王五&quot;);
+System.out.println(nameList.toString());
+</code></pre>
+<p>我们一行一行看代码，第一行，是创建了一个泛型类型为 String 的 ArrayList 对象，往下三行分别向 nameList 中添加三个元素，最后进行打印。</p>
+<blockquote>
+<ol>
+<li><code>new ArrayList&lt;&gt;();</code> 这种写法是在 Java 1.7 及其之后才有的，在 Java 之前的版本，需要在 <code>&lt;&gt;</code> 内指定出具体的泛型类型，如：<code>new ArrayList&lt;String&gt;();</code> 简写是因为做了类型推断。</li>
+<li>实际的 Android 开发中，最好还是别用 <code>System.out.println();</code>，这里只是个人学习 Demo 才这么写。</li>
+</ol>
+</blockquote>
+<p>输出内容:</p>
+<pre><code>[张三, 李四, 王五]
+</code></pre>
+<p>来，下面我们来自己创建一个泛型出来。为什么创建泛型呢？或者说我们创建什么泛型呢？实际上泛型可以作用于类、接口或是方法(函数)。</p>
+<p>泛型类</p>
+<pre><code class="language-java">   public class Rep&lt;T&gt; {
+       private int code;
+       private String message;
+       private T result;
+   }
+</code></pre>
+<p>这样的结构应该不会陌生，服务端在返回给客户端的数据就是按照这种形式进行组装的，其中 result 可以是任何类型的任何值，既有可能是 boolean 类型的 false，也有可能是 List 类型的集合。</p>
+<blockquote>
+<p>实际应该还有其他的内容，如 get 、set 方法等，此处略过。</p>
+</blockquote>
+<p>泛型接口</p>
+<pre><code class="language-java">   public interface Shop&lt;T&gt; {
+     T buy();
+   
+     int back(T product);
+   }
+</code></pre>
+<p>定义了一个泛型的接口，内部包含两个没有方法体的方法。一个的返回值是泛型类型 T ，表示买了一个什么东西；一个的参数是泛型类型 T，表示一个什么东西退货退多少钱。这里的 <code>什么东西</code> 就是泛型类型 T。</p>
+<p>泛型方法</p>
+<pre><code class="language-java">   public T getResult() {
+     return result;
+   }
+   
+   public void setResult(T result) {
+     this.result = result;
+   }
+</code></pre>
+<p>这两个泛型方法就是简单的将泛型类中的 result 这个成员变量进行赋值和返回。</p>
+<p>这好像没什么实际意义，来点有意思的东西。刚才我们定义了一个 Shop 的泛型接口，现在我们再来创建一个卖 Apple 的店(AppleShop，首先需要一个 Apple 的类，其次需要一个实现 Shop 接口的 AppleShop 类。</p>
+<pre><code class="language-java">public class Apple {}
+
+public class AppleShop implements Shop {
+    @Override
+    public Object buy() {
+        return null;
+    }
+
+    @Override
+    public int back(Object product) {
+        return 0;
+    }
+}
+</code></pre>
+<p>唉，好像有点不对了，AppleShop 里面的 <code>buy()</code> 为什么返回的不是 Apple 对象还有那个 <code>back</code>方法为什么参数也成了 Object 而不是 Apple ？</p>
+<p>原因在与：<code>class AppleShop implements Shop</code> 准确的来说是在于 <code>implements Shop</code> ，在实现泛型接口时，如果不指定具体的泛型类型（这里指的是 Apple）时，跟实现接口没什么区别，只是其中的泛型方法的返回值、参数全变成了 Object。</p>
+<p>上面的 AppleShop 类相当于实现了下面这个接口。</p>
+<pre><code class="language-java">public interface Shop {
+    Object buy();
+
+    int back(Object product);
+}
+</code></pre>
+<p>那我想让他实现我想要的 Apple 类型的怎么做呢？在实现类的类名后 <code>&lt;类型名称&gt;</code> 即可。AppleShop 的正确写法如下：</p>
+<pre><code class="language-java">public class AppleShop implements Shop&lt;Apple&gt; {
+    @Override
+    public Apple buy() {
+        return new Apple();
+    }
+
+    @Override
+    public int back(Apple product) {
+        return 1;
+    }
+}
+</code></pre>
+<p>其中，buy 方法直接返回一个 Apple 对象，back 方法返回 1 元。</p>
+<p>现在又有一家店既能买东西，又能修东西，它得先继承 Shop，我这回知道了，就这么写就行。</p>
+<pre><code class="language-java">public interface Repairableable extends Shop&lt;T&gt;{
+    
+}
+</code></pre>
+<p>唉，不对，咋报错呢？</p>
+<p><img src="https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/image-20190627171053335.png" alt="image-20190627171053335"></p>
+<p>因为这里的 T 是不存在的。不存在？咋不存在，刚才不是在 Shop 这个接口里面都写了吗？怎么还是不存在？为什么呀。不存在？人家都是那么用 T 这个关键字，人家都不错，我错了？冷静下来想想，Shop 接口中那个 T 是用 <code>&lt;&gt;</code> 包裹着然后紧跟着接口名，我也试试。</p>
+<pre><code class="language-java">public interface Repairableable&lt;T&gt; extends Shop&lt;T&gt;{
+
+}
+</code></pre>
+<p>哎，对了，不报错了，这是什么原因？</p>
+<p>首先，T 不是一个关键字，不是因为 T 才让一个借口变成泛型接口，它只是一个符号，重要的是包裹着 T 的 <code>&lt;&gt;</code>你可以把 T 换成任何字符，比如 B，E，甚至是 String 这个单词，它只是一直对未知类型的指代。</p>
+<p>其次，T 的作用范围仅仅只是当前类或是当前接口。</p>
+<p>所以，我们在 Repairableable 这个接口名后再像 Shop 接口那样声明出 T 就行了。</p>
+<blockquote>
+<ol>
+<li>当你用 String 作为泛型类型的指代，那与本类中用来表示字符串的 String 冲突时，需要把表示字符串的 String 类的包名进行指定。</li>
+<li><code>Repairableable&lt;T&gt; extends Shop&lt;T&gt;</code> 这两个 T 虽然字符一样，但是表示意思不一样，前者表示这是一个<strong>类型参数</strong>是 T 的接口名是  Repairableable 的接口，后者表示的是，Shop 接口的类型参数的<strong>实际值</strong>是 T 的接口。</li>
+</ol>
+</blockquote>
+<p>对了，我们常用的 HashMap 他是两个泛型参数，那个怎么去定义的呢？</p>
+<pre><code class="language-java">public class HashMap&lt;K,V&gt;{
+  public void put(K key, V value) {
+  }
+  
+  public V get(Object key) {
+      return v;
+  }
+}
+</code></pre>
+<blockquote>
+<p>非 HashMap 源代码，经改动。</p>
+</blockquote>
+<p>来自己动手写一下。</p>
+<p>现在有一家店不仅卖苹果，还卖手机卡，这手机卡，有移动、联通、电信这三家运营商，他到底买的哪家的呢？也不知道，也不清楚。</p>
+<pre><code class="language-java">public class ChinaMobile {
+}
+
+public class ChinaTelecom {
+}
+
+public class ChinaUnicom {
+}
+
+public interface SimShop&lt;T, S&gt; extends Shop&lt;T&gt;  {
+    S buySim(String name, String id);
+}
+
+public class SimAppleShop implements AppleSimShop&lt;Apple, ChinaMobile&gt; {
+    @Override
+    public ChinaMobile buySim(String name, String id) {
+        return null;
+    }
+
+    @Override
+    public Apple buy() {
+        return null;
+    }
+
+    @Override
+    public int back(Apple product) {
+        return 0;
+    }
+}
+</code></pre>
+<p>哎，这样看起来是挺不错的哈，泛型挺好用的呀。不过在实现 SimShop 的时候，要是有人乱填，写了一个一个不是三家运营商的类怎么办？那系统不就报错了？</p>
+<p>当然为了，应对这种情况，Java 给出了解决方法，在 SimShop 的接口声明上加上限制，具体是这样的：</p>
+<pre><code class="language-java">public interface SimShop&lt;T, S extends Sim&gt; extends Shop&lt;T&gt;  {
+    S buySim(String name, String id);
+}
+</code></pre>
+<p>这样一来，在实现 SimShop 类时，填入的第二个类型参数必须是继承自 Sim 类或实现了 Sim 接口的类。这里的 extends 指的不是继承，而是限制其类型参数的 类型。如果需要限制多个内容，使用 &amp; 符合进行连接，但不能存在多个类，只能存在多个接口，因为 Java 不允许多继承。在多限制条件中，存在类，需要放在最左边。例如：</p>
+<p><code>interface SimShop &lt;T, S extends View &amp; Sim &amp; Fruit &amp; Serializable&gt;</code>。</p>
+
+            </div>
+          </article>
+        </div>
+    
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cherrylover.github.io/post/dan-li-mo-shi">
+              <h3 class="post-title">
+                单例模式
+              </h3>
+            </a>
+          </div>  
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'f5cc70d7d50fba65cf69',
+    clientSecret: '1d018e38ce9cdd399682bdd76690decfef00a051',
+    repo: 'CherryLover.github.io',
+    owner: 'CherryLover',
+    admin: ['CherryLover'],
+    id: location.pathname,      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+    
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

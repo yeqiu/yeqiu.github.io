@@ -1,0 +1,523 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Retrofit 使用配置 | Jiang</title>
+<link rel="shortcut icon" href="https://cherrylover.github.io/favicon.ico?v=1565058747395">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cherrylover.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-143284233-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-143284233-1');
+</script>
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cherrylover.github.io">
+  <img class="avatar" src="https://cherrylover.github.io/images/avatar.png?v=1565058747395" alt="">
+  </a>
+  <h1 class="site-title">
+    Jiang
+  </h1>
+  <p class="site-description">
+    我允许你走进我的世界，但不许你在我的世界里走来走去。
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/CherryLover" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+        <a href="https://juejin.im/user/576d73cd0a2b58006a09ad87" target="_blank">
+          <i class="fab fa-weibo"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+      
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              Retrofit 使用配置
+            </h2>
+            <div class="post-info">
+              <time class="post-time">
+                · 2018-08-30 ·
+              </time>
+              
+                <a href="https://cherrylover.github.io/tag/Mk4HmBIQ7" class="post-tags">
+                  # Android
+                </a>
+              
+                <a href="https://cherrylover.github.io/tag/fZN0895-D" class="post-tags">
+                  # 编码技巧
+                </a>
+              
+            </div>
+            
+            <div class="post-content">
+              <p>Retrofit 配合 RxJava 的使用是越来越广泛，小到个人项目，大到公司项目，都能看到它，它的使用也是挺简单的，它本身就是对 OkHttp 的一个封装，让开发者在使用网络请求时更加方便、快捷。我用了一段时间之后，觉得虽然封装的挺好的，但是在用到一些东西的时候还是需要来自定义一下的，下面就来分享一下，我在使用过程中的一些自定义小功能。</p>
+<h1 id="retrofit-的使用">Retrofit 的使用</h1>
+<h2 id="连接超时">连接超时</h2>
+<p>平时对连接超时没什么印象，因为你即使不设置，默认情况下也是有超时时长的，如果想要设置连接超时时长的话，需要在 OkHttpClient.Builder 的初始化的时候进行设置。例如：</p>
+<pre><code class="language-java">OkHttpClient.Builder builder = new OkHttpClient.Builder()
+				.connectTimeout(Mark.HTTP_CONNECT_TIMEOUT, TimeUnit.MILLISECONDS)
+				.readTimeout(Mark.HTTP_READ_TIMEOUT, TimeUnit.MILLISECONDS)
+				.writeTimeout(Mark.HTTP_WRITE_TIMEOUT, TimeUnit.MILLISECONDS);
+                
+</code></pre>
+<p>在这里我设置了三个连接超时的时长，分别是：</p>
+<ul>
+<li>connectTimeout 是 TCP Socket 的三次握手（客户端与服务的建立连接）的时长，在这个时间范围内进行 3 次握手；</li>
+<li>readTimeout 是 TCP Socket 的三次握手和单独读取 IO 操作的时长，包括响应的来源，如果在这个过程中连接失败，则获取不到数据；</li>
+<li>writeTimeout 则是用于 IO 写入的超时限制。</li>
+</ul>
+<blockquote>
+<p>从 Reftofit 2.5.0 的版本开始，这三个的默认连接超时时长均为 10 秒。</p>
+</blockquote>
+<p><a href="https://square.github.io/okhttp/3.x/okhttp/okhttp3/OkHttpClient.Builder.html">参考地址</a></p>
+<h2 id="公共参数拦截器">公共参数拦截器</h2>
+<p>在一些情况下，我们需要在请求上添加一些公共信息，比如，用户登录之后携带的验证信息，或是针对不同的请求地址加上一些固有的请求参数。要做到这一点就需要把一些公共的信息提取出来，放在一个拦截器中，之后每一次的网络请求根据限制条件进行判断是否使用参数连接器对请求地址或头部信息进行二次改造。</p>
+<pre><code class="language-java">Interceptor mTokenInterceptor = new Interceptor() {
+    @Override public Response intercept(Chain chain) throws IOException {
+        Request originalRequest = chain.request();
+        if (Your.sToken == null || alreadyHasAuthorizationHeader(originalRequest)) {
+            return chain.proceed(originalRequest);
+        }
+        Request authorised = originalRequest.newBuilder()
+            .header(&quot;Authorization&quot;, Your.sToken)
+            .build();
+        return chain.proceed(authorised);
+    }
+};
+</code></pre>
+<p>或是</p>
+<pre><code class="language-java">Interceptor mTokenInterceptor = new Interceptor() {
+    @Override public Response intercept(Chain chain) throws IOException {
+        Request original = chain.request();
+        HttpUrl originalHttpUrl = original.url();
+        HttpUrl url = originalHttpUrl.newBuilder()
+                            .addQueryParameter(&quot;accountsuite&quot;, &quot;someThing&quot;)
+                            .build();
+        return chain.proceed(authorised);
+    }
+};
+</code></pre>
+<p>设置拦截器之后，需要在 OkHttpClient.Builder 上进行应用，通过这个方法<code>.addInterceptor(mTokenInterceptor)</code>加上即可，而且 OkHttp 的拦截器可以同时设置多个，比如在添加参数连接器之后，再加上下面的日志拦截器。</p>
+<h2 id="网络请求日志">网络请求日志</h2>
+<p>网络请求日志输出是非常重要的，在调试的时候能及时的查看客户端与后台的数据交互是否存在异常。可是，我在第一次使用的时候是不知道该怎么去配置，看了文档才知道可以自己定义一个 HttpLoggingInterceptor（日志拦截器） 然后设置日志拦截等级并像上面那样给添加到 OkHttpClient.Builder 即可，HttpLoggingInterceptor 一共有 4 个等级：</p>
+<ul>
+<li>NONE     不打印</li>
+<li>BASIC    只打印基础信息
+<ul>
+<li>请求方法类型（GET、POST……）</li>
+<li>HTTP 版本（HTTP1.0/HTTP1.1）</li>
+<li>请求内容体大小</li>
+<li>是否成功返回</li>
+<li>耗时时长</li>
+<li>内容体大小</li>
+</ul>
+</li>
+<li>HEADERS  在 BASIC 级别的基础上增加请求 HEADER 信息</li>
+<li>BODY     在 HEADERS 级别的基础上增加请求及返回的 BODY 信息</li>
+</ul>
+<p>OkHttp 设置网络日志请求拦截器</p>
+<pre><code class="language-java">HttpLoggingInterceptor loggingInterceptor=new HttpLoggingInterceptor();
+loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
+
+OkHttpClient client = new OkHttpClient.Builder()
+				.connectTimeout(CONNECT_TIME_OUT, TimeUnit.SECONDS)
+				.readTimeout(CONNECT_TIME_OUT, TimeUnit.SECONDS)
+				.writeTimeout(CONNECT_TIME_OUT, TimeUnit.SECONDS)
+				.addInterceptor(loggingInterceptor)
+				.build();
+</code></pre>
+<p>其实，这四个等级已经能满足需求，不过，由于是使用 系统的 log 打印模块，每次只能把单个信息打印出来，而且还不能定位到具体的行数以及线程，真的不方便。</p>
+<p>所以，这个时候就需要自己动手去改造原有的 OkHttp 的日志打印，不过我们想要的日志内容基本上是全覆盖了 HttpLoggingInterceptor 的后三个等级。所以，可以参考着他的源码来进行自己修改。<br>
+我想要达到的效果就是取消等级限制并使用第三方的日志输出统一打印：</p>
+<p>话不多说，上代码：</p>
+<pre><code class="language-java">private static Interceptor logInterceptor() {
+		Interceptor logInterceptor = new Interceptor() {
+				@Override
+				public Response intercept(Chain chain) throws IOException {
+						Request original = chain.request();
+						Request.Builder requestBuilder = original.newBuilder();
+						Request request = requestBuilder.url(original.url()).build();
+
+						RequestBody requestBody = request.body();
+						boolean hasRequestBody = requestBody != null;
+
+						StringBuilder requestSb = new StringBuilder();
+						Connection connection = chain.connection();
+						Protocol protocol = connection != null ? connection.protocol() : Protocol.HTTP_1_1;
+						requestSb.append(&quot;请求--&gt;&quot;)
+										.append(' ')
+										.append(request.method())
+										.append(' ')
+										.append(request.url())
+										.append(' ')
+										.append(protocol)
+										.append(&quot;\n&quot;);
+
+						if (hasRequestBody) {
+								if (requestBody.contentType() != null) {
+										requestSb.append(&quot;Content-Type: &quot;)
+														.append(requestBody.contentType())
+														.append(&quot;\n&quot;);
+								}
+								if (requestBody.contentLength() != -1) {
+										requestSb.append(&quot;Content-Length: &quot;)
+														.append(requestBody.contentLength())
+														.append(&quot;-byte body&quot;).append(&quot;\n&quot;);
+								}
+						}
+
+						Headers requestHeaders = request.headers();
+						for (int i = 0, count = requestHeaders.size(); i &lt; count; i++) {
+								String name = requestHeaders.name(i);
+								requestSb.append(name)
+												.append(&quot;: &quot;)
+												.append(requestHeaders.value(i));
+								requestSb.append(&quot;\n&quot;);
+						}
+
+						if (hasRequestBody) {
+								Buffer buffer = new Buffer();
+								requestBody.writeTo(buffer);
+
+								Charset charset = UTF8;
+								MediaType contentType = requestBody.contentType();
+								if (contentType != null) {
+										charset = contentType.charset(UTF8);
+								}
+								if (isPlaintext(buffer)) {
+										requestSb.append(buffer.readString(charset))
+														.append(&quot;\n&quot;);
+										requestSb.append(&quot;--&gt; END &quot;).
+														append(request.method());
+								} else {
+										requestSb.append(&quot;--&gt; END &quot;)
+														.append(request.method())
+														.append(&quot; (binary &quot;)
+														.append(requestBody.contentLength())
+														.append(&quot;-byte body omitted)&quot;);
+								}
+						}
+						Logger.i(requestSb.toString());
+
+						long startNs = System.nanoTime();
+						Response response;
+						try {
+								response = chain.proceed(request);
+						} catch (Exception e) {
+								Logger.e(&quot;&lt;-- HTTP FAILED: &quot; + e);
+								throw e;
+						}
+
+						long tookMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNs);
+						ResponseBody responseBody = response.body();
+						BufferedSource source = null;
+						Buffer buffer = null;
+						int responseCode = response.code();
+						if (responseBody != null) {
+								source = responseBody.source();
+								source.request(Long.MAX_VALUE);
+								buffer = source.buffer();
+						}
+						long contentLength = responseBody.contentLength();
+
+						StringBuilder responseSb = new StringBuilder();
+						responseSb.append(&quot;返回&lt;-- &quot;)
+										.append(response.code())
+										.append(' ')
+										.append(response.message())
+										.append(' ')
+										.append(response.request().url())
+										.append(&quot; (&quot;)
+										.append(tookMs)
+										.append(&quot;ms&quot;).append(')')
+										.append(&quot;\n&quot;);
+
+						Headers headers = response.headers();
+						for (int i = 0, count = headers.size(); i &lt; count; i++) {
+								responseSb.append(headers.name(i))
+												.append(&quot;: &quot;)
+												.append(headers.value(i))
+												.append(&quot;\n&quot;);
+						}
+						Charset charset = UTF8;
+						MediaType contentType = responseBody.contentType();
+						if (contentType != null) {
+								try {
+										charset = contentType.charset(UTF8);
+								} catch (UnsupportedCharsetException e) {
+										Logger.i(&quot;Couldn't decode the response body; charset is likely malformed.&quot;);
+										Logger.i(&quot;&lt;-- END HTTP&quot;);
+										return response;
+								}
+						}
+						if (!isPlaintext(buffer)) {
+								Logger.i(&quot;&lt;-- END HTTP (binary &quot; + buffer.size() + &quot;-byte body omitted)&quot;);
+								return response;
+						}
+
+						if (contentLength != 0) {
+								Logger.i(&quot;返回数据: &quot; + buffer.clone().readString(charset));
+						}
+
+						responseSb.append(&quot;&lt;-- END HTTP (&quot;)
+										.append(buffer.size())
+										.append(&quot;-byte body)&quot;);
+						Logger.i(responseSb.toString());
+
+						return response;
+				}
+		};
+		return logInterceptor;
+}
+
+private static boolean isPlaintext(Buffer buffer) {
+		try {
+				Buffer prefix = new Buffer();
+				long byteCount = buffer.size() &lt; 64 ? buffer.size() : 64;
+				buffer.copyTo(prefix, 0, byteCount);
+				for (int i = 0; i &lt; 16; i++) {
+						if (prefix.exhausted()) {
+								break;
+						}
+						int codePoint = prefix.readUtf8CodePoint();
+						if (Character.isISOControl(codePoint) &amp;&amp; !Character.isWhitespace(codePoint)) {
+								return false;
+						}
+				}
+				return true;
+		} catch (EOFException e) {
+				return false;
+		}
+}
+</code></pre>
+<p>代码虽然有些长，但还是很容易理解。就是分别将 Request 以及 Response 进行拦截，得到想展示出来的内容信息，然后拼接起来，最后使用 Logger 进行打印。打印出来的效果还是比较不错的。在这里拦截到 Response 之后，我把所有的异常统一进行捕捉了，还可以添加一些其他的异常信息，比如：连接超时的异常、URL 错误的异常等等。</p>
+<p>主要就是参考 OkHttp 里的 HttpLoggingInterceptor 这个类，可以自己尝试一下。</p>
+<ul>
+<li>请求打印</li>
+</ul>
+<pre><code>01-30 11:09:55.085 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ╔════════════════════════════════════════════════════════════════════════════════════════
+01-30 11:09:55.086 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ Thread: RxCachedThreadScheduler-6
+01-30 11:09:55.086 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ╟────────────────────────────────────────────────────────────────────────────────────────
+01-30 11:09:55.086 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ RealInterceptorChain.proceed  (RealInterceptorChain.java:67)
+01-30 11:09:55.086 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║    RealInterceptorChain.proceed  (RealInterceptorChain.java:92)
+01-30 11:09:55.086 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║       NetWorkManager$4.intercept  (NetWorkManager.java:288)
+01-30 11:09:55.086 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ╟────────────────────────────────────────────────────────────────────────────────────────
+01-30 11:09:55.086 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ 请求--&gt; POST http://192.168.199.186:8080/report/api/v1/drp/checkInputBill/create?accountsuite=demo http/1.1
+01-30 11:09:55.086 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ Content-Type: application/json; charset=UTF-8
+01-30 11:09:55.086 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ Content-Length: 1576-byte body
+01-30 11:09:55.086 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ Conteng-type: application/json;charset=UTF-8
+01-30 11:09:55.086 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ Authorization: Basic YWRtaW46MTExMTEx
+01-30 11:09:55.086 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ {&quot;checkInputBill&quot;:[{&quot;createOperatorName&quot;:&quot;admin&quot;,&quot;createOperatorCode&quot;:&quot;admin&quot;,&quot;handWorkBill&quot;:&quot;4001&quot;,&quot;checkNoticeBillId&quot;:&quot;31e4fb9dd3b441dea77904ec9a435b7e&quot;,&quot;checkInputBillItems&quot;:[{&quot;quantity&quot;:&quot;1&quot;,&quot;barCode1&quot;:&quot;0001V002201&quot;,&quot;sizeName&quot;:&quot;XS&quot;,&quot;skuIds&quot;:&quot;4028471e6116e54201611c4311070062&quot;,&quot;productCode&quot;:&quot;0001V&quot;,&quot;colorName&quot;:&quot;米红&quot;,&quot;barCode2&quot;:&quot;0001V002201&quot;},{&quot;quantity&quot;:&quot;1&quot;,&quot;barCode1&quot;:&quot;0010003&quot;,&quot;sizeName&quot;:&quot;165/92A&quot;,&quot;skuIds&quot;:&quot;aaf9426940bb5b7b0140bee72e873f5e&quot;,&quot;productCode&quot;:&quot;001首饰&quot;,&quot;colorName&quot;:&quot;均色&quot;,&quot;barCode2&quot;:&quot;0010003&quot;},{&quot;quantity&quot;:&quot;1&quot;,&quot;barCode1&quot;:&quot;000DX0039&quot;,&quot;sizeName&quot;:&quot;160/88A&quot;,&quot;skuIds&quot;:&quot;4028810c5b88f46c015b896754810002&quot;,&quot;productCode&quot;:&quot;0040Z&quot;,&quot;colorName&quot;:&quot;纯白&quot;,&quot;barCode2&quot;:&quot;0040Z0102&quot;},{&quot;quantity&quot;:&quot;4&quot;,&quot;barCode1&quot;:&quot;000DY0340&quot;,&quot;sizeName&quot;:&quot;165/92A&quot;,&quot;skuIds&quot;:&quot;4028810c5b88f46c015b896754820006&quot;,&quot;productCode&quot;:&quot;0040Z&quot;,&quot;colorName&quot;:&quot;米白&quot;,&quot;barCode2&quot;:&quot;0040Z0203&quot;},{&quot;quantity&quot;:&quot;1&quot;,&quot;barCode1&quot;:&quot;000DY0539&quot;,&quot;sizeName&quot;:&quot;170/96A&quot;,&quot;skuIds&quot;:&quot;4028810c5b88f46c015b896754820007&quot;,&quot;productCode&quot;:&quot;0040Z&quot;,&quot;colorName&quot;:&quot;米白&quot;,&quot;barCode2&quot;:&quot;0040Z0204&quot;},{&quot;quantity&quot;:&quot;2&quot;,&quot;barCode1&quot;:&quot;1030620027103&quot;,&quot;sizeName&quot;:&quot;165/92A&quot;,&quot;skuIds&quot;:&quot;aaf9426948850ec40148893130014f7c&quot;,&quot;productCode&quot;:&quot;杏色V领下摆纱衫&quot;,&quot;colorName&quot;:&quot;浅杏&quot;,&quot;barCode2&quot;:&quot;null&quot;}],&quot;createOperatorId&quot;:&quot;40288996207b57eb01207b5c81ee0004&quot;,&quot;remark&quot;:&quot;4001:4001&quot;,&quot;updateTime&quot;:&quot;2018-01-12 16:42:38&quot;,&quot;createTime&quot;:&quot;2018-01-12 15:29:49&quot;,&quot;backGroundColorId&quot;:&quot;1&quot;,&quot;checkNoticeBill&quot;:&quot;PDT18011100009&quot;,&quot;checkInputBillId&quot;:&quot;dc1c7d1d3b454da3903e0beec7da2e8f&quot;}],&quot;checkType&quot;:1,&quot;checkTime&quot;:&quot;2018-02-01 02:30:00&quot;,&quot;operatorId&quot;:&quot;40288996207b57eb01207b5c81ee0004&quot;}
+01-30 11:09:55.086 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ --&gt; END POST
+01-30 11:09:55.086 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ╚════════════════════════════════════════════════════════════════════════════════════════
+</code></pre>
+<ul>
+<li>结果打印</li>
+</ul>
+<pre><code>01-30 11:09:55.264 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ╔════════════════════════════════════════════════════════════════════════════════════════
+01-30 11:09:55.265 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ Thread: RxCachedThreadScheduler-6
+01-30 11:09:55.265 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ╟────────────────────────────────────────────────────────────────────────────────────────
+01-30 11:09:55.265 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ RealInterceptorChain.proceed  (RealInterceptorChain.java:67)
+01-30 11:09:55.265 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║    RealInterceptorChain.proceed  (RealInterceptorChain.java:92)
+01-30 11:09:55.266 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║       NetWorkManager$4.intercept  (NetWorkManager.java:386)
+01-30 11:09:55.266 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ╟────────────────────────────────────────────────────────────────────────────────────────
+01-30 11:09:55.266 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ 返回数据: {&quot;result&quot;:true,&quot;checkInputBill&quot;:[{&quot;createOperatorName&quot;:&quot;admin&quot;,&quot;createOperatorCode&quot;:&quot;admin&quot;,&quot;handWorkBill&quot;:&quot;4001&quot;,&quot;checkNoticeBillId&quot;:&quot;31e4fb9dd3b441dea77904ec9a435b7e&quot;,&quot;checkInputBillItems&quot;:[{&quot;quantity&quot;:&quot;1&quot;,&quot;barCode1&quot;:&quot;0001V002201&quot;,&quot;sizeName&quot;:&quot;XS&quot;,&quot;skuIds&quot;:&quot;4028471e6116e54201611c4311070062&quot;,&quot;productCode&quot;:&quot;0001V&quot;,&quot;colorName&quot;:&quot;米红&quot;,&quot;barCode2&quot;:&quot;0001V002201&quot;},{&quot;quantity&quot;:&quot;1&quot;,&quot;barCode1&quot;:&quot;0010003&quot;,&quot;sizeName&quot;:&quot;165/92A&quot;,&quot;skuIds&quot;:&quot;aaf9426940bb5b7b0140bee72e873f5e&quot;,&quot;productCode&quot;:&quot;001首饰&quot;,&quot;colorName&quot;:&quot;均色&quot;,&quot;barCode2&quot;:&quot;0010003&quot;},{&quot;quantity&quot;:&quot;1&quot;,&quot;barCode1&quot;:&quot;000DX0039&quot;,&quot;sizeName&quot;:&quot;160/88A&quot;,&quot;skuIds&quot;:&quot;4028810c5b88f46c015b896754810002&quot;,&quot;productCode&quot;:&quot;0040Z&quot;,&quot;colorName&quot;:&quot;纯白&quot;,&quot;barCode2&quot;:&quot;0040Z0102&quot;},{&quot;quantity&quot;:&quot;4&quot;,&quot;barCode1&quot;:&quot;000DY0340&quot;,&quot;sizeName&quot;:&quot;165/92A&quot;,&quot;skuIds&quot;:&quot;4028810c5b88f46c015b896754820006&quot;,&quot;productCode&quot;:&quot;0040Z&quot;,&quot;colorName&quot;:&quot;米白&quot;,&quot;barCode2&quot;:&quot;0040Z0203&quot;},{&quot;quantity&quot;:&quot;1&quot;,&quot;barCode1&quot;:&quot;000DY0539&quot;,&quot;sizeName&quot;:&quot;170/96A&quot;,&quot;skuIds&quot;:&quot;4028810c5b88f46c015b896754820007&quot;,&quot;productCode&quot;:&quot;0040Z&quot;,&quot;colorName&quot;:&quot;米白&quot;,&quot;barCode2&quot;:&quot;0040Z0204&quot;},{&quot;quantity&quot;:&quot;2&quot;,&quot;barCode1&quot;:&quot;1030620027103&quot;,&quot;sizeName&quot;:&quot;165/92A&quot;,&quot;skuIds&quot;:&quot;aaf9426948850ec40148893130014f7c&quot;,&quot;productCode&quot;:&quot;杏色V领下摆纱衫&quot;,&quot;colorName&quot;:&quot;浅杏&quot;,&quot;barCode2&quot;:&quot;null&quot;}],&quot;createOperatorId&quot;:&quot;40288996207b57eb01207b5c81ee0004&quot;,&quot;remark&quot;:&quot;4001:4001&quot;,&quot;updateTime&quot;:&quot;2018-01-12 16:42:38&quot;,&quot;createTime&quot;:&quot;2018-01-12 15:29:49&quot;,&quot;backGroundColorId&quot;:&quot;1&quot;,&quot;checkNoticeBill&quot;:&quot;PDT18011100009&quot;,&quot;checkInputBillId&quot;:&quot;dc1c7d1d3b454da3903e0beec7da2e8f&quot;,&quot;method&quot;:&quot;update&quot;}]}
+01-30 11:09:55.266 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ╚════════════════════════════════════════════════════════════════════════════════════════
+01-30 11:09:55.266 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ╔════════════════════════════════════════════════════════════════════════════════════════
+01-30 11:09:55.267 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ Thread: RxCachedThreadScheduler-6
+01-30 11:09:55.267 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ╟────────────────────────────────────────────────────────────────────────────────────────
+01-30 11:09:55.267 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ RealInterceptorChain.proceed  (RealInterceptorChain.java:67)
+01-30 11:09:55.267 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║    RealInterceptorChain.proceed  (RealInterceptorChain.java:92)
+01-30 11:09:55.267 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║       NetWorkManager$4.intercept  (NetWorkManager.java:390)
+01-30 11:09:55.267 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ╟────────────────────────────────────────────────────────────────────────────────────────
+01-30 11:09:55.267 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ 返回&lt;-- 200 OK http://192.168.199.186:8080/report/api/v1/drp/checkInputBill/create?accountsuite=demo (176ms)
+01-30 11:09:55.267 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ Content-Type: application/json;charset=UTF-8
+01-30 11:09:55.267 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ Transfer-Encoding: chunked
+01-30 11:09:55.267 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ Server: Jetty(7.6.14.v20131031)
+01-30 11:09:55.267 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ Cache-Control: public, max-age=60
+01-30 11:09:55.267 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ║ &lt;-- END HTTP (1512-byte body)
+01-30 11:09:55.267 24755-29465/com.soooft.android.baicaipos I/BaiCaiPOS: ╚════════════════════════════════════════════════════════════════════════════════════════
+</code></pre>
+<p>可以看到 Logger 打印的内容还是挺丰富的，包含了行号，线程再加上那个范围框，更能直观的看出日志内容。</p>
+<h1 id="与-rxjava-相结合">与 RxJava 相结合</h1>
+<p>现在网络请求都是 Retrofit 配合 RxJava ，针对 RxJava 有两点可以进行优化改进的地方。</p>
+<h2 id="io-线程与-android-主线程的切换">IO 线程与 Android 主线程的切换</h2>
+<p>要知道在 Android 中是不能将耗时操作放在主线程的，以前自己通过 Thread + HttpURLConnection 实现网络请求的时候使用的是 Handler 进行处理线程切换，现在换成了 RxJava 就更方便了，不过，每次都要写那两行去切换线程，虽然就那么两行，但也还是不想写。</p>
+<p>RxJava 有一个操作符 compose() 异常的强大，可以在保持原有 RxJava  编程风格不变的情况下完成自定义的操作。 ObservableTransformer 是 RxJava 中一个强大的接口，用于将类型 A 转换成类型 B ，这么说有些牵强了，其实就是把上游的内容经过  ObservableTransformer 转换成下游想要的类型，当然如果类型不变，也是可以进行的或是进行一些操作。</p>
+<p>这里就需要结合 compose 和 ObservableTransformer 来一起使用，看代码吧。</p>
+<pre><code class="language-java">public static &lt;T&gt; ObservableTransformer&lt;T, T&gt; applySchedulers() {
+		return new ObservableTransformer&lt;T, T&gt;() {
+				@Override
+				public ObservableSource&lt;T&gt; apply(Observable&lt;T&gt; upstream) {
+						return upstream.subscribeOn(Schedulers.io())
+										.observeOn(AndroidSchedulers.mainThread());
+				}
+		};
+}
+</code></pre>
+<p>当然，如果习惯用 Java 8 的 Lambda 表达式，看起来就更简洁了。简洁是挺简洁的，不过有些不熟悉的方法，就完全不知道什么意思了，像我这样的新手还是不用的好。</p>
+<pre><code class="language-java">public static &lt;T&gt; ObservableTransformer&lt;T, T&gt; applySchedulers() {
+		return upstream -&gt; upstream.subscribeOn(Schedulers.io())
+						.observeOn(AndroidSchedulers.mainThread());
+}
+</code></pre>
+<h2 id="网络数据封装">网络数据封装</h2>
+<p>在实际的开发过程中，基本上服务器返回的内容都是这样的：</p>
+<pre><code class="language-json">{
+    resultNo: 200,
+    message: &quot;成功&quot;
+    result: [],
+    error: false
+}
+
+</code></pre>
+<p>这样的返回信息，包含了一些状态信息及具体的数据，其中 resultNo 和 message 以及 error 都是类型不会变的状态信息，只有其中的 result 是会动态变化的具体数据，可能里面是一个 List 也可能里面是一个 布尔值变量，甚至还有可能嵌套好几层。所以可以把 result 定义为泛型 T ，这样在具体到单一个接口数据的时候再指定类型即可。</p>
+<pre><code class="language-java">public class BaseResponse&lt;T&gt; {
+    private boolean error;
+    private T results;
+
+    /*
+     * get and set 
+     */
+}
+</code></pre>
+<p>如果是这样的话，我们在定义网络接口的时候，就可以指明实际返回的数据类型了。例如：</p>
+<pre><code class="language-java">@GET(&quot;data/{type}/{size}/{page}&quot;)
+Observable&lt;BaseResponse&lt;List&lt;Map&lt;String, Object&gt;&gt;&gt;&gt; typeData(@Path(&quot;type&quot;) String type, @Path(&quot;size&quot;) int size, @Path(&quot;page&quot;) int page);
+</code></pre>
+<p>不过，这样使用了 BaseResponse<T> 之后，在 Observable 实现订阅( subscribe )的时候，提供的参数类型也就成了 BaseResponse&lt;List&lt;Map&lt;String, Object&gt;&gt;&gt; response ，这时候，需要我们从 response 中再取一次，多写一行？不可能的。</p>
+<p>上面在进行线程切换的时候，用到了 ObservableTransformer 这里也可以用，上面是相同的事件类型使用它来进行转换，只不过现在变成了，不同类型的数据转换。</p>
+<pre><code class="language-java">public static &lt;T&gt; ObservableTransformer&lt;BaseResponse&lt;T&gt;, T&gt; handleResult() {
+		return new ObservableTransformer&lt;BaseResponse&lt;T&gt;, T&gt;() {
+				@Override
+				public ObservableSource&lt;T&gt; apply(Observable&lt;BaseResponse&lt;T&gt;&gt; upstream) {
+						return upstream.flatMap(new Function&lt;BaseResponse&lt;T&gt;, ObservableSource&lt;T&gt;&gt;() {
+								@Override
+								public ObservableSource&lt;T&gt; apply(BaseResponse&lt;T&gt; response) throws Exception {
+										if (response == null) {
+												return Observable.empty();
+										} else if (response.getResults() == null) {
+												return Observable.empty();
+										} else {
+												return Observable.just(response.getResults());
+										}
+								}
+						});
+				}
+		};
+}
+</code></pre>
+<p>同样的，实现 ObservableTransformer 中的 apply()  方法，这时候就不是简单的线程切换了，而是需要进行类型之间的转换。这里我只是简单的进行类型转换，其实还可以加入一些简单的逻辑判断。在这里，我们已经可以获取到 BaseResponse 了，那么我们可以根据其中的一些公共内容进行判断，然后进行发射（RxJava）不同的事件，比如，跟后台开发约定好一些错误代码，如 404 ，那么在这里，就可以加入 针对 404 的事件处理，可以是 发射一个自定义异常或是其他的操作；也可以是针对返回的 result 进行内容判断，判断一次是否为空。</p>
+
+            </div>
+          </article>
+        </div>
+    
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cherrylover.github.io/post/shi-yong-gong-ju-wox">
+              <h3 class="post-title">
+                实用工具 Wox
+              </h3>
+            </a>
+          </div>  
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'f5cc70d7d50fba65cf69',
+    clientSecret: '1d018e38ce9cdd399682bdd76690decfef00a051',
+    repo: 'CherryLover.github.io',
+    owner: 'CherryLover',
+    admin: ['CherryLover'],
+    id: location.pathname,      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+    
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

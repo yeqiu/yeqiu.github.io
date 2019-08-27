@@ -1,0 +1,372 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>看一看 DataBinding | Jiang</title>
+<link rel="shortcut icon" href="https://cherrylover.github.io/favicon.ico?v=1565058747395">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cherrylover.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-143284233-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-143284233-1');
+</script>
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cherrylover.github.io">
+  <img class="avatar" src="https://cherrylover.github.io/images/avatar.png?v=1565058747395" alt="">
+  </a>
+  <h1 class="site-title">
+    Jiang
+  </h1>
+  <p class="site-description">
+    我允许你走进我的世界，但不许你在我的世界里走来走去。
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/CherryLover" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+        <a href="https://juejin.im/user/576d73cd0a2b58006a09ad87" target="_blank">
+          <i class="fab fa-weibo"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+      
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              看一看 DataBinding
+            </h2>
+            <div class="post-info">
+              <time class="post-time">
+                · 2019-07-23 ·
+              </time>
+              
+                <a href="https://cherrylover.github.io/tag/J97-m2V0f" class="post-tags">
+                  # Jetpack 追新
+                </a>
+              
+                <a href="https://cherrylover.github.io/tag/37yorOBW4" class="post-tags">
+                  # 持续学习
+                </a>
+              
+                <a href="https://cherrylover.github.io/tag/Mk4HmBIQ7" class="post-tags">
+                  # Android
+                </a>
+              
+            </div>
+            
+              <div class="post-feature-image" style="background-image: url('https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/blog/paul-schafer-t6oZEgL0z18-unsplash.jpg')">
+              </div>
+            
+            <div class="post-content">
+              <p>最近在看一些人写的代码，发现很多都有用到 DataBinding，每每看到 DataBinding 相关的代码看不懂，摸不透，实在是难受啊，可是怎么办呢，谁让自己不会的呢。没办法开始学吧，不要求会太多，总得能看的懂人家写的是啥意思吧。</p>
+<!-- more -->
+<blockquote>
+<p>本篇难度属于 DataBinding 入门级别，如果有什么错误，还请指正。要学习 DataBinding 最好的教材还是通过官方给的<a href="https://codelabs.developers.google.com/codelabs/android-databinding/#0">实例教程</a>。</p>
+</blockquote>
+<p>正式开始之前呢，总是得添加依赖，不过，DataBinding 的依赖可不像 RxJava 或是其他库通过引入两行依赖，而是通过在 app.gradle 文件中引入下面的配置：</p>
+<pre><code class="language-groovy">android {
+    ...
+    dataBinding {
+        enabled = true
+    }
+}
+</code></pre>
+<p>有了依赖之后，我们就可以开始了，现在想象一个场景，我们需要把一段文字显示在 TextView 上。之前，我们都是通过 findViewById，然后 setText，现如今来一起看看 DataBinding 是怎么做的吧。</p>
+<p>首先，我们需要把布局文件的结构进行改造一下，改造成这样的结构。</p>
+<pre><code class="language-xml">&lt;layout&gt;
+    &lt;data&gt;
+    &lt;/data&gt;
+    &lt;ViewGroup&gt;
+    &lt;/ViewGroup&gt;
+&lt;/layout&gt;
+</code></pre>
+<blockquote>
+<p>Android Studio 对 DataBinding 有自动替换的支持。</p>
+</blockquote>
+<p><img src="https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/blog/image-20190718101219778.png" alt="image-20190718101219778"></p>
+<p>替换之后的 ViewGroup 就是之前的根布局，data 节点内用于定义数据。</p>
+<pre><code class="language-xml">&lt;data&gt;
+    &lt;variable name=&quot;content&quot; type=&quot;String&quot; /&gt;
+&lt;/data&gt;
+</code></pre>
+<p>以此形式定义的变量 content 等价于 <code>String content</code>。拿到了 content 这个变量，紧接着就需要设置到 TextView 上。设置 Text，使用的属性是 <code>android:text=&quot;&quot;</code> 至于填入的值，就是 content，不过语法上稍有不同，<code>android:text=&quot;@{content}&quot;</code> 其中 <code>@</code> 以及<code>{}</code>是用于包裹其中的值，以此来区分开 <code>android:text=&quot;content&quot;</code>。</p>
+<blockquote>
+<p>Databinding 使用这种语法来设置内容，事实上这种表达方法不仅仅用于设置个字符串，还支持表达式，更多内容请参<a href="https://developer.android.com/topic/libraries/data-binding/expressions">考官方文档</a>。本文也会介绍一些。</p>
+</blockquote>
+<p>事实上，我们更多时候会把 content 作为一个类的成员变量。只要将 variable 的 type 属性改成对应的类名，同时在 TextView 上改为 <code>android:text=&quot;@{detail.content}&quot;</code> 即可。</p>
+<pre><code class="language-xml">&lt;data&gt;
+    &lt;variable name=&quot;detail&quot; type=&quot;me.monster.blogtest.model.MomentDetail&quot; /&gt;
+&lt;/data&gt;
+</code></pre>
+<p>在布局文件中定义好了变量，现在我们该回到 Java 文件中将布局文件使用 DataBinding 进行绑定上数据了。</p>
+<pre><code class="language-java">public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        FragmentDetailBinding viewDataBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_detail, container, false);
+        View root = viewDataBinding.getRoot();
+        mMomentDetail = new MomentDetail();
+  			mMomentDetail.setContent(&quot;使用 DataBinding&quot;);
+        viewDataBinding.setDetail(mMomentDetail);
+        return root;
+    }
+</code></pre>
+<blockquote>
+<ol>
+<li>这段代码是使用在 Fragment 中的，如果在 Activity 中，则使用 <code>DataBinding.Util.setContentView(Activity activity, int layoutId)</code> 这个方法。</li>
+<li>FragmentDetailBinding 这个类是根据布局文件生成的，类名的规则是布局文件的文件名+Binding；</li>
+</ol>
+</blockquote>
+<p>DataBinding 这样使用，好像不太够日常使用。当 mMomentDetail 内部的 content 发生改变时，TextView 能自动更新吗？暂时不行，想让 TextView 自动更新 mMomentDetail 的 content 的内容，我们还需要另外的一些东西。</p>
+<p>要想及时更新 mMomentDetail 的 content 内容，按照以往的做法，就是在更新 mMomentDetail 的 content 内容时，手动调用 <code>setText()</code> 这个方法。现在有了 DataBinding 就不用了。我们可以把 mMomentDetail 的 content 定义为一种可观察其变化的类型，然后通过 DataBinding 就能自动完成对 TextView 上内容的更新。</p>
+<pre><code class="language-java">public class MomentDetail {    
+    private String content;
+
+    public String getContent() {
+        return content == null ? &quot;&quot; : content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+}
+</code></pre>
+<p>这个是 TextView 不能自动更新内容的 MomentDetail 类，要想让 TextView 自动更新，只需要把 content 的类型改变即可。改为 <code>ObservableField&lt;String&gt; content</code>。</p>
+<pre><code class="language-java">private ObservableField&lt;String&gt; content = new ObservableField&lt;&gt;();
+
+public ObservableField&lt;String&gt; getContent() {
+    return content;
+}
+
+public String getContentValue() {
+    return content.get();
+}
+
+public void setContent(String content) {
+    this.content.set(content);
+}
+</code></pre>
+<p>与普通的 String 类型不同的是，想要改变 content 的值，需要调用 <code>ObservableField.set(T t)</code> 方法，获取其中的值则使用 <code>ObservableField.get()</code> 方法。</p>
+<p>DataBinding 还包含了一些其他的类，都是一样的用法。</p>
+<ul>
+<li>ObservableBoolean</li>
+<li>ObservableByte</li>
+<li>ObservableChar</li>
+<li>ObservableShort</li>
+<li>ObservableInt</li>
+<li>ObservableLong</li>
+<li>ObservableFloat</li>
+<li>ObservableDouble</li>
+<li>ObservableParcelable</li>
+</ul>
+<p><img src="https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/blog/blog_databinding_observable.gif" alt=""></p>
+<blockquote>
+<p>我在写这篇博客的时候，使用 Handler 延迟几秒钟对 MomentDetail 进行修改，用于模拟点击事件。</p>
+</blockquote>
+<p>当我们用于观察的数据较多的时候，还可以通过将自定义的数据类继承 BaseObservable ，产生继承关系之后，数据类中的成员变量均可以在发生改变时自动应用到 View 上。</p>
+<pre><code class="language-java">public class MomentDetail extends BaseObservable {
+    private String moment;
+    private int goodCount;
+
+    @Bindable
+    public String getMoment() {
+        return moment == null ? &quot;&quot; : moment;
+    }
+
+    @Bindable
+    public int getGoodCount() {
+        return goodCount;
+    }
+
+    public void setContent(String msg) {
+        this.moment = msg;
+        notifyPropertyChanged(BR.moment);
+    }
+
+    public void updateGood(int count) {
+        goodCount = count;
+        notifyPropertyChanged(BR.goodCount);
+    }
+}
+</code></pre>
+<p>跟其他的数据类没有什么太大的差距，只是多了一个注解 <code>@Bindable</code> 以及在成员变量进行更改后进行更新 <code>notifyPropertyChanged()</code>。不过，Google 还是推荐使用 LiveData 配合使用。</p>
+<pre><code class="language-java">public class MomentViewModel extends ViewModel {
+
+    private MutableLiveData&lt;String&gt; name = new MutableLiveData&lt;&gt;(&quot;Abs&quot;);
+    private MutableLiveData&lt;Integer&gt; good = new MutableLiveData&lt;&gt;();
+
+    public void setNameValue(String value) {
+        name.setValue(value);
+    }
+
+    public MutableLiveData&lt;String&gt; getName() {
+        return name;
+    }
+
+    public MutableLiveData&lt;Integer&gt; getGood() {
+        return good;
+    }
+
+    public void setGoodValue(int goodValue) {
+        good.setValue(goodValue);
+    }
+}
+</code></pre>
+<p>相应的，布局文件中也要进行更改数据类型。</p>
+<pre><code class="language-xml">&lt;variable
+    name=&quot;viewModel&quot;
+    type=&quot;me.monster.blogtest.model.MomentViewModel&quot; /&gt;
+</code></pre>
+<p>DataBinding 设置 View 的 <code>text</code>，<code>textColor</code> 等属性都可以直接通过类似 <code>android:text=&quot;@{viewModel.name}&quot;</code> 这种形式来进行操作，那如果想对控件进行点击事件的监听怎么办呢？也不麻烦，我们只需要提供一个用于处理点击结果的方法即可。</p>
+<p>例如，我们有一个 TextView 用于进行点击，并将点击次数显示在当前 TextView 上。</p>
+<pre><code class="language-java">public void upGood() {
+    good.setValue(good.getValue() == null ? 1 : good.getValue() + 1);
+}
+</code></pre>
+<pre><code class="language-xml">&lt;TextView
+    android:id=&quot;@+id/iv_good&quot;
+    android:layout_width=&quot;wrap_content&quot;
+    android:layout_height=&quot;40dp&quot;
+    android:drawableStart=&quot;@drawable/ic_good&quot;
+    android:drawablePadding=&quot;8dp&quot;
+    android:gravity=&quot;center&quot;
+    android:onClick=&quot;@{() -&gt; viewModel.upGood()}&quot;
+    android:text=&quot;@{String.valueOf(viewModel.good)}&quot; /&gt;
+</code></pre>
+<p>不过，DataBinding 虽然挺好的，但是还是有些不足，比如通过 Glide 这种第三方框架加载图片，还是得 <code>findViewById</code>，事实上，DataBinding 提供了另一种解决思路，通过将一个静态方法加上注解，然后就可以在 View 中进行使用。</p>
+<pre><code class="language-java">@BindingAdapter({&quot;imageRes&quot;})
+public static void loadImage(ImageView imageView, int resId) {
+    Glide.with(imageView)
+            .load(resId)
+            .into(imageView);
+}
+</code></pre>
+<pre><code class="language-xml">&lt;ImageView
+    android:id=&quot;@+id/iv_avatar&quot;
+    imageRes=&quot;@{viewModel.avatar}&quot;
+    android:layout_width=&quot;50dp&quot;
+    android:layout_height=&quot;50dp&quot;
+    android:src=&quot;@mipmap/avatar_1&quot; /&gt;
+</code></pre>
+<blockquote>
+<p>BindAdapter 还有更多其他用法，请<a href="https://developer.android.com/topic/libraries/data-binding/binding-adapters">参考官方文档</a>。</p>
+</blockquote>
+<p>整体来说，DataBinding 不难，而且入门也挺简单的，不过，刚上手，很多时候摸不到头脑。不过，它的好处也很明显，在 Fragment 或是 Activity 中没有使用任何直接或是间接的 <code>findViewById</code> 操作。保证了 Activity 与 Fragment 的简洁，使其能更好的专注于页面的跳转及数据的处理，倘若配合着 Jetpack 的其他组件协同开发，估计会更高效些。</p>
+<p>本文旨在学习如何简单的使用 DataBinding，主体内容较为简单，实际上，日常开发中还会经常用到 RecyclerView 及其他功能，DataBinding 也能提供很好的支持，有兴趣或是需要的话可以自行查阅<a href="https://developer.android.com/topic/libraries/data-binding">官方文档</a>。</p>
+<p>文章首发于<a href="https://jiangjiwei.site">个人博客</a>，文中所有代码均已上传至 <a href="https://github.com/CherryLover/BlogTest">GitHub</a>，代码分支为：dataBinding。</p>
+<p>相关文章推荐：</p>
+<ul>
+<li><a href="https://jiangjiwei.site/post/yong-motionlayout-lai-zuo-guo-du-dong-hua/">用 MotionLayout 来做过渡动画</a></li>
+<li><a href="https://jiangjiwei.site/post/lai-xue-yi-bo-navigation/">来学一波 Navigation</a></li>
+</ul>
+<p>本文封面图：Photo by <a href="https://unsplash.com/@paul__schafer?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Paul Schafer</a> on <a href="https://unsplash.com/search/photos/learn?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a>。</p>
+
+            </div>
+          </article>
+        </div>
+    
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cherrylover.github.io/post/android-hun-yao">
+              <h3 class="post-title">
+                Android 混淆
+              </h3>
+            </a>
+          </div>  
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'f5cc70d7d50fba65cf69',
+    clientSecret: '1d018e38ce9cdd399682bdd76690decfef00a051',
+    repo: 'CherryLover.github.io',
+    owner: 'CherryLover',
+    admin: ['CherryLover'],
+    id: location.pathname,      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+    
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

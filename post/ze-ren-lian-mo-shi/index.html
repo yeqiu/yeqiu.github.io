@@ -1,0 +1,280 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>责任链模式 | Jiang</title>
+<link rel="shortcut icon" href="https://cherrylover.github.io/favicon.ico?v=1565058747395">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cherrylover.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-143284233-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-143284233-1');
+</script>
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cherrylover.github.io">
+  <img class="avatar" src="https://cherrylover.github.io/images/avatar.png?v=1565058747395" alt="">
+  </a>
+  <h1 class="site-title">
+    Jiang
+  </h1>
+  <p class="site-description">
+    我允许你走进我的世界，但不许你在我的世界里走来走去。
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/CherryLover" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+        <a href="https://juejin.im/user/576d73cd0a2b58006a09ad87" target="_blank">
+          <i class="fab fa-weibo"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+      
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              责任链模式
+            </h2>
+            <div class="post-info">
+              <time class="post-time">
+                · 2019-05-05 ·
+              </time>
+              
+                <a href="https://cherrylover.github.io/tag/DA_fZV3WD" class="post-tags">
+                  # 设计模式
+                </a>
+              
+                <a href="https://cherrylover.github.io/tag/ari5goDnZ" class="post-tags">
+                  # 基础技能
+                </a>
+              
+            </div>
+            
+              <div class="post-feature-image" style="background-image: url('https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/design-pattern-compress.jpg')">
+              </div>
+            
+            <div class="post-content">
+              <p>本文题图：Photo by <a href="https://unsplash.com/photos/jR4Zf-riEjI?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Andrew Ridley</a> on <a href="https://unsplash.com/search/photos/pattern?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a></p>
+<blockquote>
+<p>本文是设计模式系列文章中的第一篇。写下设计模式，是因为一次偶然的机会接触到责任链模式，在尝试利用责任链模式在系统中进行重构一部分的业务后，觉得设计模式甚至巧妙，于是萌发了通读<a href="https://me.csdn.net/LoveLion">刘伟</a>关于设计模式的文章，并记录下自己的学习过程。fighting！！！</p>
+</blockquote>
+<p><img src="https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/BlogChain.jpg" alt="责任链"></p>
+<p>先上图，来一个看图说话，处理者 A 处理 A 类内容，处理者 B 处理 B 类内容。多个处理者之间建立单向连接关系。当任务开始分配的时候，并不直接分配给具体的处理者，而是交给所有处理对象中的第一位。将原本属于单一节点的处理过程交由所有处理对象共同解决，这就是责任链。</p>
+<h3 id="责任链的分类">责任链的分类</h3>
+<ul>
+<li>纯责任链
+<ol>
+<li>当任务进入责任链时，必须在当前链中进行消费；</li>
+<li>不允许存在同一任务由多个处理者处理，例如：A 类内容经由处理者 A 处理过一部分后，成为可由处理者 B 处理的 B 类内容。</li>
+</ol>
+</li>
+<li>不纯责任链
+<ol>
+<li>允许存在当前责任链不消费当前任务；</li>
+<li>允许同一任务由多个处理者进行处理；</li>
+</ol>
+</li>
+</ul>
+<h3 id="优缺点">优缺点</h3>
+<ul>
+<li>优点
+<ol>
+<li>可根据业务需要及时调整处理对象；</li>
+<li>任务发出者无需知道以何种形式调度及具体的处理过程；</li>
+<li>每个处理者节点仅维护下一处理者节点；</li>
+</ol>
+</li>
+<li>缺点
+<ol>
+<li>当责任链配置不合理时，可能会出现死循环；</li>
+<li>当存在较长的责任链时可能导致系统性受到严重；</li>
+<li>不利于调试；</li>
+</ol>
+</li>
+</ul>
+<h2 id="实战操作">实战操作</h2>
+<h3 id="前情提要">前情提要</h3>
+<p>实际项目中，在与低功耗蓝牙进行交互时，有着严格的操作流程。具体为以下几个步骤：连接、打开通知、发送设备密钥、同步系统时间、检查系统时间、获取设备状态信息。这些业务内容不算复杂，由于早期项目追求产品迭代速度，而忽略了代码质量。导致产生了以下几个问题：</p>
+<ol>
+<li>与项目中的其他业务高度黏合；</li>
+<li>现有的设计不能满足于及时调整单一节点的数据处理；</li>
+<li>多处蓝牙相关使用场景不能产生有效复用；</li>
+<li>团对新人进入，学习成本较高；</li>
+</ol>
+<h3 id="思路">思路</h3>
+<p>首先将蓝牙交互进行拆分，将具体的交互步骤分别拆分为责任链中的处理者。初步定下连接、打开通知、发送设备密钥、同步系统时间、检查系统时间、结束，这些处理者。</p>
+<p>其次，我们需要一个组织管理者，用来添加处理者，并开始任务处理。具体的业务处理需要根据不同的需求进行处理，但彼此之间需要建立一种共性，方便组织管理者对其进行管理。这里选择新建一个抽象类作为所有的处理对象的父类。</p>
+<p>ChainRoot.java</p>
+<pre><code class="language-java">public abstract class ChainRoot&lt;D&gt; {
+    private ChainRoot&lt;D&gt; nextChain;
+
+    ChainRoot() {
+    }
+
+    public abstract void handle(int cmd, D data);
+
+    void setNextChain(ChainRoot&lt;D&gt; chain) {
+        this.nextChain = chain;
+    }
+
+    void toNext(int cmd, D data) {
+        if (nextChain != null) {
+            nextChain.handle(cmd, data);
+        }
+    }
+}
+</code></pre>
+<p>ChainManager.java</p>
+<pre><code class="language-java">public class ChainManager&lt;D&gt; {
+    private ChainRoot&lt;D&gt; chain;
+
+    private ChainManager(ChainRoot&lt;D&gt; chain) {
+        this.chain = chain;
+    }
+
+    public void handle(int cmd, D data) {
+        chain.handle(cmd, data);
+    }
+
+    public static class ChainBuilder&lt;D&gt; {
+        private ChainRoot&lt;D&gt; header;
+        private ChainRoot&lt;D&gt; tail;
+
+        public ChainBuilder() {
+            header = null;
+            tail = null;
+        }
+
+        public ChainBuilder&lt;D&gt; addChain(ChainRoot&lt;D&gt; chain) {
+            if (header == null) {
+                this.header = chain;
+                this.tail = chain;
+            } else {
+                this.tail.setNextChain(chain);
+                this.tail = chain;
+            }
+            return this;
+        }
+
+        public ChainManager&lt;D&gt; build() {
+            return new ChainManager&lt;&gt;(header);
+        }
+
+        public ChainManager&lt;D&gt; build(AndroidViewModel viewModel) {
+            return new ChainManager&lt;&gt;(header);
+        }
+    }
+}
+</code></pre>
+
+            </div>
+          </article>
+        </div>
+    
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cherrylover.github.io/post/shi-yong-android-studio-dai-ma-mo-ban-ti-gao-xiao-lu">
+              <h3 class="post-title">
+                使用 Android Studio 代码模板提高效率
+              </h3>
+            </a>
+          </div>  
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'f5cc70d7d50fba65cf69',
+    clientSecret: '1d018e38ce9cdd399682bdd76690decfef00a051',
+    repo: 'CherryLover.github.io',
+    owner: 'CherryLover',
+    admin: ['CherryLover'],
+    id: location.pathname,      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+    
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>

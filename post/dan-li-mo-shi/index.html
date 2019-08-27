@@ -1,0 +1,262 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="description" content="" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>单例模式 | Jiang</title>
+<link rel="shortcut icon" href="https://cherrylover.github.io/favicon.ico?v=1565058747395">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cherrylover.github.io/styles/main.css">
+
+<script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+<script src="https://cdn.bootcss.com/moment.js/2.23.0/moment.min.js"></script>
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-143284233-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-143284233-1');
+</script>
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://cherrylover.github.io">
+  <img class="avatar" src="https://cherrylover.github.io/images/avatar.png?v=1565058747395" alt="">
+  </a>
+  <h1 class="site-title">
+    Jiang
+  </h1>
+  <p class="site-description">
+    我允许你走进我的世界，但不许你在我的世界里走来走去。
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+        <a href="https://github.com/CherryLover" target="_blank">
+          <i class="fab fa-github"></i>
+        </a>
+      
+    
+      
+    
+      
+        <a href="https://juejin.im/user/576d73cd0a2b58006a09ad87" target="_blank">
+          <i class="fab fa-weibo"></i>
+        </a>
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+      
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              单例模式
+            </h2>
+            <div class="post-info">
+              <time class="post-time">
+                · 2019-05-24 ·
+              </time>
+              
+                <a href="https://cherrylover.github.io/tag/DA_fZV3WD" class="post-tags">
+                  # 设计模式
+                </a>
+              
+                <a href="https://cherrylover.github.io/tag/ari5goDnZ" class="post-tags">
+                  # 基础技能
+                </a>
+              
+            </div>
+            
+              <div class="post-feature-image" style="background-image: url('https://monster-image-backup.oss-cn-shanghai.aliyuncs.com/picgo/design_singleton-1.jpg')">
+              </div>
+            
+            <div class="post-content">
+              <p>本文题图：Photo by <a href="https://unsplash.com/photos/bcAh4wFCBUM?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Angelo Caputo</a> on <a href="https://unsplash.com/search/photos/moon?utm_source=unsplash&amp;utm_medium=referral&amp;utm_content=creditCopyText">Unsplash</a></p>
+<blockquote>
+<p>本文是设计模式系列中的第二篇，上一篇是 <a href="https://jiangjiwei.site/post/ze-ren-lian-mo-shi/">责任链模式</a></p>
+</blockquote>
+<p>在软件开发的过程中，总是会期待某一个对象在整个应用程序的生命周期中，仅存在一次，该怎么做，我们都知道，就是引入单例模式这个设计模式，让这个对象保持始终只会创建一次。单例模式也是有多种形式，来了解一下吧。</p>
+<pre><code class="language-java">Tasker tasker = new Tasker(&quot;Test&quot;);
+tasker.doTask();
+
+public class Tasker {
+    private String name;
+
+    public Tasker(String name) {
+        this.name = name;
+    }
+
+    public void doTask() {
+        System.out.println(name);
+    }
+}
+</code></pre>
+<p>这就是一个很简单的，创建 Tasker 对象，然后调用一次 <code>doTask</code> 方法。这里，我们不能通过代码的方法对它进行限制全局只创建一次。那怎么样才可以呢？</p>
+<p>首先，我们需要将构造方法的访问权限设置为 <code>private</code>，设置为 <code>private</code> 之后，由于外部不能访问构造方法也就不能进行多次调用构造方法获取对象了。</p>
+<p>那设置了 private 之后，外面怎么获取 Tasker 对象呢？答案是通过在 Tasker 内部新建一个静态方法 getInstance，然后通过静态方法返回一个 Tasker 对象，由于 Tasker 的构造方法的访问权限是 private，所以在 Tasker 内部访问这个构造方法是没有问题的。</p>
+<p>那么我们只需要在 getInstance 方法内部进行检查需要返回的对象是否为空，如果为空则通过调用构造方法进行声明一个 Tasker 对象，如果不为空直接返回。由于 getInstance 方法是静态方法，所以，我们需要在 Tasker 里还需要维护一个静态的 Taster 对象。</p>
+<pre><code class="language-java">Tasker tasker = Tasker.getInstance();
+tasker.doTask();
+
+public class Tasker {
+    private String name;
+    private static Tasker sTasker;
+
+    public static Tasker getInstance() {
+        if (sTasker == null) {
+            sTasker = new Tasker(&quot;Test&quot;);
+        }
+        return sTasker;
+    }
+
+    private Tasker(String name) {
+        this.name = name;
+    }
+
+    public void doTask() {
+        System.out.println(name);
+    }
+}
+</code></pre>
+<p>这样我们就能得到一个简单的单例对象。并且这种形式被称之为<strong>懒汉单例模式</strong>。</p>
+<p>这样就行了吗？并不是，这些代码运行在多线程中，可能就会存在一种情况，当一个线程调用 getInstance 判断 sTasker 为空，正在进行调用 Tasker 的构造方法，又有一个线程进入，也判断 sTasker 为空，这样就再次会调用 Tasker 的构造方法，这就不能保证 Tasker 这个类在系统中的唯一性。那要怎么解决这个问题呢？</p>
+<p>我们知道，为保证线程安全，Java 有一个关键字 synchronized，我们在调用构造方法的时候加上这个 synchronized 关键字，同时在 sTasker 前加上 volatile 关键字，就能保证调用构造方法的线程安全，就像下面这样。</p>
+<pre><code class="language-java">private static volatile Tasker sTasker;
+
+public static Tasker getInstance() {
+    if (sTasker == null) {
+        synchronized (Tasker.class) {
+            sTasker = new Tasker(&quot;Test&quot;);
+        }
+    }
+    return sTasker;
+}
+</code></pre>
+<p>但是这个是真的能保证是线程安全吗？不见得，当两个线程（A、B）同时访问 getInstance 这个方法时，由于线程 A 获取到了 synchronized 的锁定状态并创建了 Tasker 对象，而当线程 B 获取到 synchronized 的访问状态时，由于 Tasker 已经在线程 A 进行了创建，此时的 sTasker 并不为空，不需要再次调用 构造方法进行获取一个新的实例，所以，应该在 synchronized 锁定的代码块中再加入一个判断 sTasker 是否为空。这种形式的单例模式，我们称之为<strong>双重检查锁定实现的懒汉式单例模式</strong>。</p>
+<pre><code class="language-java">private static volatile Tasker sTasker;
+
+public static Tasker getInstance() {
+		if (sTasker == null) {
+				synchronized (Tasker.class) {
+						if (sTasker == null) {
+								sTasker = new Tasker(&quot;Test&quot;);
+						}
+				}
+		}
+		return sTasker;
+}
+</code></pre>
+<p>那我能不能在声明这个变量（sTasker）的时候，就直接调用其构造方法来进行初始化操作。这样不就既保证了当前类实例在系统中的唯一性也保证了线程安全吗？没错，这样也是单例模式的另一种实现方式，叫<strong>饿汉式单例模式</strong>。</p>
+<pre><code class="language-java">private static Tasker sTasker = new Tasker(&quot;Test&quot;);
+
+public static Tasker getInstance() {
+    return sTasker;
+}
+</code></pre>
+<p>不过，饿汉式单例在当前类加载到内存中的时候就进行了初始化操作，假设我们没有使用到 sTasker，那去创建这个 sTasker 对象就相当于是浪费了，浪费可耻。而且当我们在构造方法中初始化过多的资源信息时也会影响整个系统的加载时长。从资源的使用角度来看，饿汉式的单例模式是不如双重检查的懒汉式的单例模式的，但双重检查的懒汉式单例也有属于他自己的问题，假设我们在构造方法中初始化了较多的资源，由于引入了 synchronized，所以在 getInstance 时将导致系统性能受到一定的影响。</p>
+<p>那就没有两全其美的方法吗？有的，这种方法被称之为 Initializtion Demand Holder (IoDH)。</p>
+<p>在 Java 中，通过在实例类中增加一个静态的内部类，在内部类中创建单例对象，再通过单例类的 getInstance 返回实例供外部使用。</p>
+<pre><code class="language-java">private static class Inner {
+    private static final Tasker TASKER = new Tasker(&quot;Test&quot;);
+}
+
+public static Tasker getInstance() {
+    return Inner.TASKER;
+}
+</code></pre>
+<p>由于类加载时不会实例化 Tasker 对象，所以只在 调用 getInstance 方法时才会调用。而在调用 getInstance 时才进行加载 Inner 类并创建一个 Tasker 实例，由 JVM 保证了其线程安全。</p>
+
+            </div>
+          </article>
+        </div>
+    
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://cherrylover.github.io/post/shan-yong-sou-suo">
+              <h3 class="post-title">
+                善用搜索
+              </h3>
+            </a>
+          </div>  
+        
+
+        
+          
+            <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+<script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+
+<div id="gitalk-container"></div>
+
+<script>
+
+  var gitalk = new Gitalk({
+    clientID: 'f5cc70d7d50fba65cf69',
+    clientSecret: '1d018e38ce9cdd399682bdd76690decfef00a051',
+    repo: 'CherryLover.github.io',
+    owner: 'CherryLover',
+    admin: ['CherryLover'],
+    id: location.pathname,      // Ensure uniqueness and length less than 50
+    distractionFreeMode: false  // Facebook-like distraction free mode
+  })
+
+  gitalk.render('gitalk-container')
+
+</script>
+
+          
+
+          
+        
+    
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+</div>
+
+<script>
+  hljs.initHighlightingOnLoad()
+</script>
+
+      </div>
+    </div>
+  </body>
+</html>
